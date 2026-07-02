@@ -80,6 +80,7 @@ Modelo simples: **UM limite dispara UMA ação**. Edite `RamCleanerConfig.json`:
 | Ação | Passos | Quando usar | Impacto |
 |------|--------|-------------|---------|
 | `All` (TUDO) | Working Sets → System WS → Modified → Standby | Desktop normal, low-RAM, agressivo | Libera mais, mas Working Sets pode causar **engasgo** em jogo / **pico de latência** em servidor |
+| `Safe` | Working Sets → Modified | **Antes de desligar** | Descarrega as páginas sujas pro disco (1 → 2) sem purgar a Standby — a purga é inútil antes de shutdown |
 | `SafeStrong` | Modified → Standby | **Jogo, servidor, criação** | Forte **sem stutter** (não toca nos Working Sets) |
 | `Standby` | Standby | Bateria, uso leve | Mínimo, só cache |
 
@@ -257,6 +258,8 @@ Stop-Process -Name "PowerShell" -Force -ErrorAction SilentlyContinue
 4. **Ajuste os thresholds** - Não existe "ideal universal". Teste, observe logs, ajuste.
 
 5. **Combine com limpeza manual** - Às vezes, antes de abrir um jogo, use a limpeza manual (opção 4) para limpar tudo.
+
+6. **Antes de desligar** - Use a limpeza manual **5 - Safe** (Working Sets → Modified): descarrega as páginas sujas pro disco e o shutdown fica mais rápido. Purgar a Standby antes de desligar não ajuda em nada (é cache limpo que o Windows descarta de graça).
 
 ---
 

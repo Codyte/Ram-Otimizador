@@ -4,9 +4,9 @@
 #   23-58   Helpers: Show-Header (RAM/standby/tarefa), Invoke-Engine
 #   60-89   Show-AnaliseRecomendacao (analise inteligente + aplicar)
 #   91-116  Show-PerfisMenu (lista perfis pre-prontos e aplica)
-#  118-142  Show-LimpezaManual (ordem: WS -> Modified -> Standby)
-#  144-152  Show-Logs
-#  157-206  Loop principal do menu (opcoes 0-9 + T tarefa 2o plano)
+#  118-141  Show-LimpezaManual (1 WS, 2 Modified, 3 Standby, 4 All, 5 Safe)
+#  143-151  Show-Logs
+#  156-205  Loop principal do menu (opcoes 0-9 + T tarefa 2o plano)
 # ============================================================================
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -117,15 +117,14 @@ function Show-PerfisMenu {
 # ---------------------------------------------------------------------------
 function Show-LimpezaManual {
     Show-Header
-    $map = @{ "1"="WorkingSets"; "2"="ModifiedPageList"; "3"="Standby"; "4"="All"; "5"="SafeStrong"; "6"="WorkingStandby" }
+    $map = @{ "1"="WorkingSets"; "2"="ModifiedPageList"; "3"="Standby"; "4"="All"; "5"="Safe" }
     while ($true) {
         Write-Host "`n[LIMPEZA MANUAL]`n" -ForegroundColor Cyan
         Write-Host "  1 - Working Sets" -ForegroundColor Yellow
         Write-Host "  2 - Modified Page List" -ForegroundColor Yellow
         Write-Host "  3 - Standby List" -ForegroundColor Yellow
-        Write-Host "  4 - TUDO (1 -> 2 -> 3: Working Sets + System WS -> Modified -> Standby)" -ForegroundColor Yellow
-        Write-Host "  5 - Modified + Standby (2 -> 3: nao toca Working Sets, sem stutter)" -ForegroundColor Yellow
-        Write-Host "  6 - Working + Standby (1 -> 3)" -ForegroundColor Yellow
+        Write-Host "  4 - All (1 -> 2 -> 3: Working Sets + System WS -> Modified -> Standby)" -ForegroundColor Yellow
+        Write-Host "  5 - Safe (1 -> 2: Working Sets -> Modified; ideal antes de desligar)" -ForegroundColor Yellow
         Write-Host "  0 - Voltar" -ForegroundColor Gray
         $sel = Read-Host "`nOpcao"
 

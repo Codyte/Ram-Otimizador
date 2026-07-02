@@ -18,13 +18,13 @@
 #   L470   Resolve-UsageThresholdPercent
 #   L482   Format-UsageThreshold
 #   L502   Get-RamProfiles
-#   L562   Apply-RamProfile
-#   L582   Get-MemoryStats
-#   L597   Get-StandbyListMB
-#   L615   Get-HeavyProcesses
-#   L628   Get-SystemInfo
-#   L654   Get-RecommendedProfile
-#   L701   Write-RamLog
+#   L563   Apply-RamProfile
+#   L583   Get-MemoryStats
+#   L598   Get-StandbyListMB
+#   L616   Get-HeavyProcesses
+#   L629   Get-SystemInfo
+#   L655   Get-RecommendedProfile
+#   L702   Write-RamLog
 # ======================= END NAV INDEX =======================
 
 # Raiz portatil: pasta do projeto = pai da pasta 'scripts' onde este arquivo esta.
@@ -212,7 +212,7 @@ function Get-RamConfigComments {
         Profile              = "Perfil ativo. Troque pelo menu (opcao 2); nao edite a mao."
         ThresholdClean       = "Limite de RAM USADA que dispara a limpeza. Numero = % (ex: 80) ou texto (ex: '80%')."
         ThresholdCleanGB     = "Mesmo limite em GB de RAM USADA (ex: 10.5 ou '10.5gb'). null = usar so o %. Se os dois existirem, dispara no que vier primeiro (OU)."
-        CleanAction          = "Acao ao atingir o limite: All = TUDO (WorkingSets -> Modified -> Standby); SafeStrong = Modified+Standby (forte, sem stutter); Standby = so Standby (leve)."
+        CleanAction          = "Acao ao atingir o limite: All = TUDO (WorkingSets -> Modified -> Standby); Safe = WorkingSets -> Modified (sem purgar standby; bom pre-desligamento); SafeStrong = Modified+Standby (forte, sem stutter); Standby = so Standby (leve)."
         CleanEngine          = "Motor de limpeza: Auto = API nativa do Windows se disponivel, senao RAMMap; Native = so API nativa; RAMMap = so o exe da Sysinternals."
         StepDelayMs          = "Delay em ms entre os passos de uma limpeza de varias etapas (deixa as paginas migrarem). 0 = sem delay."
         CheckIntervalSeconds = "Segundos entre cada verificacao de memoria."
@@ -343,7 +343,7 @@ function Normalize-RamConfig {
         [Parameter(Mandatory)]$Schema
     )
 
-    $allowedActions = @("Standby", "WorkingSets", "SystemWorkingSets", "ModifiedPageList", "SafeStrong", "WorkingStandby", "All")
+    $allowedActions = @("Standby", "WorkingSets", "SystemWorkingSets", "ModifiedPageList", "Safe", "SafeStrong", "All")
     $action = "$($Config.CleanAction)"
     $matchAction = $allowedActions | Where-Object { $_ -ieq $action } | Select-Object -First 1
     if ($matchAction) { $Config.CleanAction = $matchAction }
@@ -503,6 +503,7 @@ function Get-RamProfiles {
     # Cada perfil = UM limite (ThresholdClean, %/GB) + UMA acao (CleanAction):
     #   All        = TUDO (WorkingSets -> Modified -> Standby). Libera mais, mas
     #                Working Sets pode causar engasgo em jogo / latencia em servidor.
+    #   Safe       = WorkingSets -> Modified, sem purgar a Standby (pre-desligamento).
     #   SafeStrong = Modified + Standby (sem Working Sets). Forte e sem stutter.
     #   Standby    = so Standby. Mais leve.
     # ThresholdCleanGB opcional ($null = usar so o %; ex: 10.5 ou "10.5gb").

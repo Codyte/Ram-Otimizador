@@ -42,6 +42,9 @@
                                    //                Standby libera tudo). Libera o maximo, MAS
                                    //                Working Sets pode causar engasgo em jogo /
                                    //                pico de latencia em servidor.
+                                   // "Safe"       = Working Sets -> Modified (1 -> 2), SEM
+                                   //                purgar a Standby. Ideal antes de desligar:
+                                   //                descarrega as paginas sujas p/ o disco.
                                    // "SafeStrong" = Modified + Standby (SEM Working Sets).
                                    //                Forte e sem stutter. Ideal p/ jogo,
                                    //                servidor e maquina de criacao.

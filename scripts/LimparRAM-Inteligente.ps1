@@ -3,18 +3,18 @@
 #   L58    Write-Log
 #   L86    Confirm-RAMMapEula
 #   L102   Invoke-RAMClean
-#   L254   Invoke-CleanTracked
-#   L270   Restore-CleanState
-#   L279   Save-CleanState
-#   L290   Write-Heartbeat
-#   L324   Write-CycleLog
-#   L334   Test-MemoryAndClean
-#   L418   Wait-MonitorInterval
-#   L437   Start-RAMMonitor
-#   L496   Test-Admin
-#   L502   Assert-Admin
-#   L513   Show-Status
-#   L545   Menu interativo (sem params) -----------------------------------------
+#   L256   Invoke-CleanTracked
+#   L272   Restore-CleanState
+#   L281   Save-CleanState
+#   L292   Write-Heartbeat
+#   L326   Write-CycleLog
+#   L336   Test-MemoryAndClean
+#   L420   Wait-MonitorInterval
+#   L439   Start-RAMMonitor
+#   L498   Test-Admin
+#   L504   Assert-Admin
+#   L515   Show-Status
+#   L547   Menu interativo (sem params) -----------------------------------------
 # ======================= END NAV INDEX =======================
 
 [CmdletBinding(DefaultParameterSetName = 'Menu')]
@@ -29,7 +29,7 @@ param(
     [switch]$Status,                        # So mostra status (nao precisa admin)
 
     [Parameter(ParameterSetName = 'Clean')]
-    [ValidateSet("Standby", "WorkingSets", "SystemWorkingSets", "ModifiedPageList", "SafeStrong", "WorkingStandby", "All")]
+    [ValidateSet("Standby", "WorkingSets", "SystemWorkingSets", "ModifiedPageList", "Safe", "SafeStrong", "All")]
     [string]$Clean                          # Limpeza manual direta de um tipo
 )
 
@@ -101,7 +101,7 @@ function Confirm-RAMMapEula {
 
 function Invoke-RAMClean {
     param(
-        [ValidateSet("Standby", "WorkingSets", "SystemWorkingSets", "ModifiedPageList", "SafeStrong", "WorkingStandby", "All")]
+        [ValidateSet("Standby", "WorkingSets", "SystemWorkingSets", "ModifiedPageList", "Safe", "SafeStrong", "All")]
         [string]$Type = "Standby"
     )
 
@@ -116,10 +116,12 @@ function Invoke-RAMClean {
         "WorkingSets"       { @("WorkingSets") }
         "SystemWorkingSets" { @("SystemWorkingSets") }
         "ModifiedPageList"  { @("ModifiedPageList") }
+        # Safe: preparo p/ desligar - descarrega Working Sets e grava a Modified
+        # List no disco (1 -> 2), sem purgar a Standby (inutil antes de shutdown).
+        "Safe"              { @("WorkingSets", "ModifiedPageList") }
         # SafeStrong: libera forte SEM tocar nos Working Sets (sem stutter em
         # jogo/servidor). So Modified + Standby.
         "SafeStrong"        { @("ModifiedPageList", "Standby") }
-        "WorkingStandby"    { @("WorkingSets", "Standby") }
         "All"               { @("WorkingSets", "SystemWorkingSets", "ModifiedPageList", "Standby") }
     }
 
@@ -562,11 +564,13 @@ switch ($Choice) {
     "2" {
         Show-Status
         Write-Host "Tipo de limpeza:" -ForegroundColor Yellow
-        Write-Host "1 - Standby List (recomendado)" -ForegroundColor Gray
-        Write-Host "2 - Working Sets" -ForegroundColor Gray
-        Write-Host "3 - Tudo" -ForegroundColor Gray
+        Write-Host "1 - Working Sets" -ForegroundColor Gray
+        Write-Host "2 - Modified Page List" -ForegroundColor Gray
+        Write-Host "3 - Standby List" -ForegroundColor Gray
+        Write-Host "4 - All (1 -> 2 -> 3)" -ForegroundColor Gray
+        Write-Host "5 - Safe (1 -> 2, ideal antes de desligar)" -ForegroundColor Gray
         $Type = Read-Host "Escolha"
-        $TypeMap = @{ "1" = "Standby"; "2" = "WorkingSets"; "3" = "All" }
+        $TypeMap = @{ "1" = "WorkingSets"; "2" = "ModifiedPageList"; "3" = "Standby"; "4" = "All"; "5" = "Safe" }
         if ($TypeMap.ContainsKey($Type)) { $null = Invoke-RAMClean -Type $TypeMap[$Type] }
         else { Write-Host "Opcao invalida." -ForegroundColor Red }
     }

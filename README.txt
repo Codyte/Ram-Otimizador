@@ -27,6 +27,7 @@ COMO FUNCIONA (resumo)
 --------------------------------------------------------------------------------
   UM limite de RAM USADA (em % e/ou GB) dispara UMA acao de limpeza:
     All        = tudo (Working Sets -> Modified -> Standby, nesta ordem)
+    Safe       = Working Sets -> Modified, sem purgar Standby (pre-desligamento)
     SafeStrong = Modified + Standby (forte, sem stutter) - jogo/servidor
     Standby    = so a Standby List (leve)
   Com app pesado/jogo aberto, "All" e rebaixado p/ "SafeStrong" automaticamente.
