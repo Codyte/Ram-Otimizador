@@ -1,0 +1,8 @@
+# Artefatos de runtime (logs diarios, heartbeat, estado e historico)
+logs/
+
+# Backups automaticos de config invalida
+config/*.bad-*.json
+
+# Cache do navindex
+.navindex-cache.json

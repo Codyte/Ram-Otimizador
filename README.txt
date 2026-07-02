@@ -1,0 +1,51 @@
+================================================================================
+  LIMPADOR INTELIGENTE DE RAM
+================================================================================
+
+COMO USAR
+--------------------------------------------------------------------------------
+  Clique direito em  INICIAR.bat  ->  "Executar como administrador".
+  Ele auto-eleva e abre a Central de Controle (menu).
+
+  No menu:
+    1  Analisar sistema e recomendar perfil
+    2  Escolher perfil pre-pronto (games, servidor 24/7, ...)
+    3  Iniciar MONITOR continuo (primeiro plano)
+    4  Limpeza manual rapida
+    5  Dashboard ao vivo
+    6  Configurar auto-execucao / agendamento (rodar em 2o plano)
+    7  Testar sistema (RAMMap, permissoes, arquivos)
+    8  Ver logs de hoje
+    9  Editar configuracao (JSON)
+    T  Iniciar/Parar a tarefa em 2o plano
+    0  Sair
+
+  No monitor em primeiro plano (opcao 3), pressione Q para parar e voltar.
+  Perfis aplicados pelo menu valem sozinhos no proximo ciclo do monitor.
+
+COMO FUNCIONA (resumo)
+--------------------------------------------------------------------------------
+  UM limite de RAM USADA (em % e/ou GB) dispara UMA acao de limpeza:
+    All        = tudo (Working Sets -> Modified -> Standby, nesta ordem)
+    SafeStrong = Modified + Standby (forte, sem stutter) - jogo/servidor
+    Standby    = so a Standby List (leve)
+  Com app pesado/jogo aberto, "All" e rebaixado p/ "SafeStrong" automaticamente.
+
+ESTRUTURA
+--------------------------------------------------------------------------------
+  scripts/   Codigo (Menu.ps1, LimparRAM-Inteligente.ps1, RamCommon.ps1, ...) + RAMMap.exe
+  config/    RamCleanerConfig.json   + RamCleanerConfig.GUIA.jsonc (guia comentado)
+  logs/      RAMMap_YYYY-MM-DD.log + monitor-status.json (criados em runtime)
+  docs/      README.md  (guia completo)
+  Projeto autocontido: scripts, config e logs ficam todos sob C:\Scripts\Ram Otimizador\
+
+DOCUMENTACAO
+--------------------------------------------------------------------------------
+  Guia completo ........ docs\README.md
+  Guia da config ....... config\RamCleanerConfig.GUIA.jsonc
+
+REQUISITOS
+--------------------------------------------------------------------------------
+  Windows 10/11 + PowerShell 5.1+  |  Administrador  |  RAMMap.exe ja incluso em
+  scripts\ (fallback: locais comuns + PATH)
+================================================================================

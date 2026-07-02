@@ -1,0 +1,111 @@
+// ============================================================================
+//  GUIA DE CONFIGURACAO - Limpador Inteligente de RAM
+// ----------------------------------------------------------------------------
+//  Este arquivo e SO REFERENCIA (formato .jsonc, com comentarios //).
+//  O script NAO le este arquivo - ele usa "RamCleanerConfig.json" (JSON puro).
+//  Esse .json ja vem com um bloco "Comments" explicando cada campo la dentro.
+//
+//  Modelo: UM limite de RAM USADA dispara UMA acao de limpeza.
+// ============================================================================
+{
+  // -------------------------------------------------------------------------
+  // PERFIL
+  // -------------------------------------------------------------------------
+  "Profile": "equilibrado",        // Perfil ativo. Troque pelo menu (opcao 2).
+                                   // Nao edite a mao: aplicar um perfil
+                                   // sobrescreve os campos abaixo de uma vez.
+                                   // Perfis: equilibrado, games, servidor-24-7,
+                                   // workstation-criacao, low-ram,
+                                   // economia-bateria, agressivo-maximo.
+
+  // -------------------------------------------------------------------------
+  // LIMITE (quando limpar) - hibrido %/GB de RAM USADA
+  // -------------------------------------------------------------------------
+  "ThresholdClean": 80,            // % de RAM USADA que dispara a limpeza.
+                                   // Numero (80) ou texto ("80%").
+
+  "ThresholdCleanGB": null,        // Mesmo limite, mas em GB de RAM USADA.
+                                   // Ex: 10.5  ou  "10.5gb"  ou  "10,5 GB"  ou  "512mb".
+                                   // null = usar so o %.
+                                   // Se os DOIS existirem -> combina por OU:
+                                   // dispara no que vier primeiro (o mais agressivo).
+                                   // Ex (PC de 32GB): "20%" + "10.5gb" dispara em 20%
+                                   // (10.5GB de 32 = ~33%, entao 20% vem antes).
+
+  // -------------------------------------------------------------------------
+  // ACAO (o que limpar quando o limite e atingido)
+  // -------------------------------------------------------------------------
+  "CleanAction": "All",            // "All"        = TUDO: Working Sets -> Modified -> Standby
+                                   //                (nesta ordem: o trim dos Working Sets empurra
+                                   //                paginas sujas p/ a Modified, o flush da
+                                   //                Modified as manda p/ a Standby, e a purga da
+                                   //                Standby libera tudo). Libera o maximo, MAS
+                                   //                Working Sets pode causar engasgo em jogo /
+                                   //                pico de latencia em servidor.
+                                   // "SafeStrong" = Modified + Standby (SEM Working Sets).
+                                   //                Forte e sem stutter. Ideal p/ jogo,
+                                   //                servidor e maquina de criacao.
+                                   // "Standby"    = so a Standby List. Mais leve.
+
+  "CleanEngine": "Auto",           // Motor que executa a limpeza:
+                                   // "Auto"   = API nativa do Windows se disponivel,
+                                   //            senao RAMMap (recomendado).
+                                   // "Native" = so a API nativa (NtSetSystemInformation);
+                                   //            sem processo externo e sem EULA.
+                                   // "RAMMap" = so o RAMMap.exe da Sysinternals.
+
+  "StepDelayMs": 400,              // Delay (ms) ENTRE os passos de uma limpeza de varias
+                                   // etapas. Deixa as paginas migrarem para a Standby
+                                   // antes de esvazia-la (limpeza mais eficaz). 0 = sem delay.
+
+  // -------------------------------------------------------------------------
+  // RITMO / ANTI-THRASHING
+  // -------------------------------------------------------------------------
+  "CheckIntervalSeconds": 30,      // Segundos entre cada verificacao de memoria.
+  "CleanCooldownSeconds": 120,     // Tempo minimo (s) entre 2 limpezas (evita repetir
+                                   // a limpeza a cada poucos segundos).
+  "HysteresisPercent": 3,          // Margem (pontos %) p/ re-armar apos limpar, evitando
+                                   // ficar limpando em volta do limiar.
+  "MinStandbyMB": 1024,            // So aplica a acao "Standby" se houver pelo menos esta
+                                   // Standby List (MB). Nao afeta All/SafeStrong.
+
+  // -------------------------------------------------------------------------
+  // GERAL
+  // -------------------------------------------------------------------------
+  "Enabled": true,                 // Ativar/desativar o monitor continuo.
+  "LogLevel": "INFO",              // "DEBUG" (tudo) | "INFO" (padrao) | "WARNING" (so alertas).
+  "LogRetentionDays": 30,          // Apaga logs diarios (RAMMap_*.log) com mais de N dias.
+  "EnableGameDetection": true,     // Guarda anti-stutter: se um app pesado/jogo estiver
+                                   // aberto e a acao for "All", ela e rebaixada
+                                   // automaticamente para "SafeStrong" naquele ciclo.
+  "RestartOnError": true           // Continuar tentando apos varios erros seguidos.
+
+  // -------------------------------------------------------------------------
+  // OBS: o "RamCleanerConfig.json" real tambem tem um campo "Comments": { ... }
+  // com a descricao de cada item. Ele e reescrito automaticamente pelo script,
+  // entao nao precisa (nem adianta) edita-lo a mao.
+  // -------------------------------------------------------------------------
+}
+
+// ============================================================================
+//  EXEMPLOS POR CENARIO  (so os campos relevantes)
+// ============================================================================
+//
+//  PC uso normal (16GB+):
+//    { "ThresholdClean": 82, "CleanAction": "All",        "CheckIntervalSeconds": 30 }
+//
+//  Pouca RAM (<=8GB):
+//    { "ThresholdClean": 72, "CleanAction": "All",        "CheckIntervalSeconds": 20 }
+//
+//  Jogo:
+//    { "ThresholdClean": 80, "CleanAction": "SafeStrong", "CheckIntervalSeconds": 15 }
+//
+//  Servidor 24/7:
+//    { "ThresholdClean": 90, "CleanAction": "SafeStrong", "CleanCooldownSeconds": 300 }
+//
+//  Notebook na bateria:
+//    { "ThresholdClean": 90, "CleanAction": "Standby",    "CleanCooldownSeconds": 600 }
+//
+//  Limite em GB (PC de 32GB) - limpar ao passar de 10.5GB usados:
+//    { "ThresholdClean": null, "ThresholdCleanGB": "10.5gb", "CleanAction": "All" }
+// ============================================================================
