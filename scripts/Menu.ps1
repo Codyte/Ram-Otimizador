@@ -1,22 +1,19 @@
-# ============================================================================
-# NAV INDEX - Menu.ps1  (HUB CENTRAL - chamado pelo INICIAR.bat, ja elevado)
-#   12-21   Bootstrap: dot-source RamCommon + deteccao de admin
-#   23-58   Helpers: Show-Header (RAM/standby/tarefa), Invoke-Engine
-#   60-89   Show-AnaliseRecomendacao (analise inteligente + aplicar)
-#   91-116  Show-PerfisMenu (lista perfis pre-prontos e aplica)
-#  118-141  Show-LimpezaManual (1 WS, 2 Modified, 3 Standby, 4 All, 5 Safe)
-#  143-151  Show-Logs
-#  156-205  Loop principal do menu (opcoes 0-9 + T tarefa 2o plano)
-# ============================================================================
+# ====================== BEGIN NAV INDEX ======================
+# NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
+#   L20    Show-Header
+#   L46    Invoke-Engine
+#   L57    Show-AnaliseRecomendacao
+#   L88    Show-PerfisMenu
+#   L115   Show-LimpezaManual
+#   L140   Show-Logs
+# ======================= END NAV INDEX =======================
+
+# HUB CENTRAL - chamado pelo INICIAR.bat (ja elevado).
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $ScriptDir "RamCommon.ps1")
 
-function Test-Admin {
-    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
-    (New-Object Security.Principal.WindowsPrincipal $id).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-$IsAdmin = Test-Admin
+$IsAdmin = Test-Admin   # Test-Admin vem do RamCommon
 $Engine  = Join-Path $ScriptDir "LimparRAM-Inteligente.ps1"
 
 # ---------------------------------------------------------------------------
@@ -161,7 +158,7 @@ function Show-Logs {
     Write-Host "  3 - Iniciar MONITOR continuo (primeiro plano)" -ForegroundColor White
     Write-Host "  4 - Limpeza manual rapida" -ForegroundColor White
     Write-Host "  5 - Dashboard ao vivo" -ForegroundColor White
-    Write-Host "  6 - Configurar auto-execucao / agendamento" -ForegroundColor White
+    Write-Host "  6 - Configurar auto-execucao / agendamento / menu de contexto" -ForegroundColor White
     Write-Host "  7 - Testar sistema (RAMMap, permissoes, arquivos)" -ForegroundColor White
     Write-Host "  8 - Ver logs de hoje" -ForegroundColor White
     Write-Host "  9 - Editar configuracao (JSON)" -ForegroundColor White

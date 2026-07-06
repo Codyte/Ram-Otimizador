@@ -1,22 +1,23 @@
-# ============================================================================
-# NAV INDEX - Configurar-AutoExecucao.ps1
-#   Bootstrap + admin + paths (dot-source RamCommon)
-#   Remove-ExistingTask / Confirm-SystemRAMMapEula (EULA do SYSTEM)
-#   New-MonitorTask (monitor continuo no boot/logon - RECOMENDADO)
-#   New-PeriodicTask (verificacao leve -Once a cada N min)
-#   Remove-AutoExec (so o agendamento) / Show-TaskStatus
-#   Get-MonitorProcesses / Invoke-FullCleanup (PARAR TUDO + limpar residuos)
-#   Menu
-# ============================================================================
+# ====================== BEGIN NAV INDEX ======================
+# NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
+#   L30    Resolve-ScheduledPowerShell
+#   L40    Test-TaskRunsThisEngine
+#   L49    Remove-ExistingTask
+#   L58    Confirm-SystemRAMMapEula
+#   L73    New-MonitorTask
+#   L108   New-PeriodicTask
+#   L152   Add-ContextMenu
+#   L178   Remove-ContextMenu
+#   L188   Remove-AutoExec
+#   L200   Get-MonitorProcesses
+#   L209   Invoke-FullCleanup
+#   L273   Show-TaskStatus
+# ======================= END NAV INDEX =======================
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $ScriptDir "RamCommon.ps1")
 
-function Test-Admin {
-    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
-    (New-Object Security.Principal.WindowsPrincipal $id).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-if (-not (Test-Admin)) {
+if (-not (Test-Admin)) {   # Test-Admin vem do RamCommon
     Write-Host "[ERRO] Requer Administrador. Abra pelo INICIAR.bat (elevado)." -ForegroundColor Red
     Read-Host "Enter para fechar"; exit 1
 }
@@ -137,6 +138,53 @@ function New-PeriodicTask {
 }
 
 # ---------------------------------------------------------------------------
+# Menu de contexto do Windows (botao direito no fundo da area de trabalho ou
+# de uma pasta -> Ram-Otimizador > 1-5, as mesmas acoes da limpeza manual).
+# HKCU = por usuario, funciona em qualquer maquina sem tocar HKLM.
+# Win11: aparece dentro de "Mostrar mais opcoes" (menu classico).
+# ---------------------------------------------------------------------------
+$CtxLauncher = Join-Path $ScriptDir "Limpeza-ContextMenu.ps1"
+$CtxBases    = @(
+    'HKCU:\Software\Classes\Directory\Background\shell\RamOtimizador',  # fundo de pasta
+    'HKCU:\Software\Classes\DesktopBackground\shell\RamOtimizador'      # area de trabalho
+)
+
+function Add-ContextMenu {
+    # Mesma numeracao/acoes do menu de limpeza manual (Menu.ps1 opcao 4).
+    $items = [ordered]@{
+        '01' = @('1 - Working Sets',                    'WorkingSets')
+        '02' = @('2 - Modified Page List',              'ModifiedPageList')
+        '03' = @('3 - Standby List',                    'Standby')
+        '04' = @('4 - All (1 -> 2 -> 3)',               'All')
+        '05' = @('5 - Safe (1 -> 2, pre-desligamento)', 'Safe')
+    }
+    foreach ($base in $CtxBases) {
+        New-Item -Path $base -Force | Out-Null
+        Set-ItemProperty -Path $base -Name 'MUIVerb'     -Value 'Ram-Otimizador'
+        Set-ItemProperty -Path $base -Name 'Icon'        -Value $PowerShellExe
+        Set-ItemProperty -Path $base -Name 'SubCommands' -Value ''   # submenu via subchave 'shell'
+        foreach ($k in $items.Keys) {
+            $sub = "$base\shell\$k"
+            New-Item -Path "$sub\command" -Force | Out-Null
+            Set-ItemProperty -Path $sub -Name '(default)' -Value $items[$k][0]
+            Set-ItemProperty -Path "$sub\command" -Name '(default)' -Value `
+                ("`"{0}`" -NoProfile -ExecutionPolicy Bypass -File `"{1}`" -Action {2}" -f $PowerShellExe, $CtxLauncher, $items[$k][1])
+        }
+    }
+    Write-Host "[OK] Menu de contexto criado: botao direito no fundo da area de trabalho/pasta -> Ram-Otimizador > 1-5." -ForegroundColor Green
+    Write-Host "     Windows 11: fica em 'Mostrar mais opcoes'. Cada acao auto-eleva (UAC) ao clicar." -ForegroundColor Gray
+}
+
+function Remove-ContextMenu {
+    $found = $false
+    foreach ($base in $CtxBases) {
+        if (Test-Path $base) { Remove-Item -Path $base -Recurse -Force; $found = $true }
+    }
+    if ($found) { Write-Host "[OK] Menu de contexto removido." -ForegroundColor Green }
+    else        { Write-Host "Menu de contexto nao estava instalado." -ForegroundColor Yellow }
+}
+
+# ---------------------------------------------------------------------------
 function Remove-AutoExec {
     Remove-ExistingTask
     try { Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "LimparRAM-Monitor" -Force -ErrorAction Stop } catch {}
@@ -214,6 +262,11 @@ function Invoke-FullCleanup {
     $hb = Join-Path $Global:RamLogDir 'monitor-status.json'
     if (Test-Path $hb) { Remove-Item $hb -Force -ErrorAction SilentlyContinue; Write-Host "   - Heartbeat (monitor-status.json) removido." -ForegroundColor Green }
 
+    # 6) Remover menu de contexto (integracao com o Explorer tambem e residuo aqui)
+    if (($CtxBases | Where-Object { Test-Path $_ }).Count -gt 0) {
+        Remove-ContextMenu
+    }
+
     Write-Host "`n[OK] Limpeza total concluida - sem monitores nem agendamentos residuais." -ForegroundColor Green
 }
 
@@ -234,16 +287,20 @@ Write-Host ""
 Write-Host "  1 - Monitor continuo no boot (RECOMENDADO p/ desktop/games)" -ForegroundColor Yellow
 Write-Host "  2 - Verificacao periodica leve a cada N min (bom p/ servidor)" -ForegroundColor Yellow
 Write-Host "  3 - Ver status da tarefa" -ForegroundColor Yellow
-Write-Host "  4 - Remover auto-execucao (so o agendamento)" -ForegroundColor Red
-Write-Host "  5 - PARAR TUDO e limpar residuos (mata monitores + remove agendamentos)" -ForegroundColor Red
+Write-Host "  4 - Adicionar menu de contexto (botao direito -> Ram-Otimizador > 1-5)" -ForegroundColor Yellow
+Write-Host "  5 - Remover menu de contexto" -ForegroundColor Yellow
+Write-Host "  6 - Remover auto-execucao (so o agendamento)" -ForegroundColor Red
+Write-Host "  7 - PARAR TUDO e limpar residuos (mata monitores + remove agendamentos)" -ForegroundColor Red
 Write-Host "  0 - Cancelar" -ForegroundColor Gray
 Write-Host ""
 switch (Read-Host "Opcao") {
     "1" { New-MonitorTask }
     "2" { New-PeriodicTask }
     "3" { Show-TaskStatus }
-    "4" { Remove-AutoExec }
-    "5" { Invoke-FullCleanup }
+    "4" { Add-ContextMenu }
+    "5" { Remove-ContextMenu }
+    "6" { Remove-AutoExec }
+    "7" { Invoke-FullCleanup }
     default { Write-Host "Cancelado." -ForegroundColor Yellow }
 }
 Write-Host ""

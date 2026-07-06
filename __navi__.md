@@ -1,19 +1,20 @@
-# __navi__ · repo tree — 11 files in 5 folders
-<!-- navindex · 2026-07-02 · DO NOT EDIT BY HAND; regen via navindex skill -->
+# __navi__ · repo tree — 12 files in 5 folders
+<!-- navindex · 2026-07-06 · DO NOT EDIT BY HAND; regen via navindex skill -->
 
 Universal index: every folder below -> the files it holds (names only). A `→ __navi__.md` marker means that folder has a symbol map — open `<that path>/__navi__.md` for exact line numbers (2 reads total: this tree -> folder map).
 
 ## `./` (1 files)
-README.txt(52)
+README.txt(56)
 
-## `config/` (2 files)
-RamCleanerConfig.json(30)  RamCleanerConfig.GUIA.jsonc(114)
+## `config/` (1 files)
+RamCleanerConfig.json(34)
 
 ## `docs/` (1 files)
 README.md(277)
 
-## `logs/` (runtime)
-RAMMap_YYYY-MM-DD.log  monitor-status.json  clean-state.json  cleanup-history.csv
+## `logs/` (1 files)
+monitor-status.json(17)
 
-## `scripts/` (7 files) → __navi__.md
-Analisar-Sistema.ps1(44)  Configurar-AutoExecucao.ps1(250)  Dashboard-RAM.ps1(200)  LimparRAM-Inteligente.ps1(584)  Menu.ps1(205)  RamCommon.ps1(715)  Teste-LimparRAM.ps1(158)
+## `scripts/` (8 files) → __navi__.md
+Analisar-Sistema.ps1(44)  Configurar-AutoExecucao.ps1(307)  Dashboard-RAM.ps1(209)  LimparRAM-Inteligente.ps1(579)  Limpeza-ContextMenu.ps1(23)  Menu.ps1(202)  RamCommon.ps1(721)  Teste-LimparRAM.ps1(167)
+

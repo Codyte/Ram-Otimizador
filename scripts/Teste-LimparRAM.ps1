@@ -1,3 +1,7 @@
+# ====================== BEGIN NAV INDEX ======================
+# NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
+# ======================= END NAV INDEX =======================
+
 # Script de teste para validar configuracao do sistema de limpeza de RAM
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -8,7 +12,7 @@ Write-Host ""
 
 # 1. Verificar privilegios
 Write-Host "[1/5] Verificando privilegios de ADMIN..." -ForegroundColor Yellow
-if (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+if (Test-Admin) {
     Write-Host "[OK] Rodando como ADMIN" -ForegroundColor Green
 } else {
     Write-Host "[ERRO] NAO esta rodando como ADMIN - RAMMap nao funcionara!" -ForegroundColor Red
@@ -93,8 +97,13 @@ if ($PercentUsed -gt 70) {
         if ($NativeOk) {
             if (-not (Invoke-NativeCleanStep -Step Standby)) { throw "API nativa falhou no passo Standby" }
         } else {
-            & $RAMMapPath -Et
-            if ($LASTEXITCODE -ne 0) { throw "RAMMap retornou ExitCode=$LASTEXITCODE" }
+            # RAMMap e app GUI: '&' nao espera e $LASTEXITCODE fica stale.
+            # Start-Process + WaitForExit (mesmo padrao do engine).
+            $p = Start-Process -FilePath $RAMMapPath -ArgumentList '-Et' -NoNewWindow -PassThru
+            if (-not $p.WaitForExit(30000)) {
+                Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+                throw "RAMMap timeout apos 30s no passo '-Et'"
+            }
         }
 
         Start-Sleep -Seconds 1

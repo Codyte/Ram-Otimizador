@@ -13,7 +13,7 @@ COMO USAR
     3  Iniciar MONITOR continuo (primeiro plano)
     4  Limpeza manual rapida
     5  Dashboard ao vivo
-    6  Configurar auto-execucao / agendamento (rodar em 2o plano)
+    6  Configurar auto-execucao / agendamento / menu de contexto (2o plano)
     7  Testar sistema (RAMMap, permissoes, arquivos)
     8  Ver logs de hoje
     9  Editar configuracao (JSON)
@@ -22,6 +22,10 @@ COMO USAR
 
   No monitor em primeiro plano (opcao 3), pressione Q para parar e voltar.
   Perfis aplicados pelo menu valem sozinhos no proximo ciclo do monitor.
+
+  MENU DE CONTEXTO (opcional): menu 6 -> opcao 4 adiciona "Ram-Otimizador"
+  ao botao direito (fundo da area de trabalho/pasta) com as limpezas 1-5;
+  opcao 5 remove. Win11: fica em "Mostrar mais opcoes". Auto-eleva ao clicar.
 
 COMO FUNCIONA (resumo)
 --------------------------------------------------------------------------------

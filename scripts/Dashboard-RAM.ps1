@@ -1,3 +1,10 @@
+# ====================== BEGIN NAV INDEX ======================
+# NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
+#   L12    Show-RAMDashboard
+#   L78    L
+#   L79    S
+# ======================= END NAV INDEX =======================
+
 # Dashboard de monitoramento de RAM em tempo real
 
 . (Join-Path $PSScriptRoot "RamCommon.ps1")
@@ -5,8 +12,7 @@
 function Show-RAMDashboard {
     param([int]$IntervalSeconds = 5)
 
-    $logDir  = Join-Path (Split-Path $PSScriptRoot -Parent) "logs"   # .\Ram Otimizador\logs
-    $logFile = Join-Path $logDir "RAMMap_$(Get-Date -Format 'yyyy-MM-dd').log"
+    $logDir  = $Global:RamLogDir
     $hbFile  = Join-Path $logDir "monitor-status.json"
     $prevCount = 0
     $bar = "========================================================"
@@ -34,11 +40,10 @@ function Show-RAMDashboard {
             elseif ($PercentUsed -gt 70) { $BarColor='Yellow';  $St='[MODERADO]' }
             else                         { $BarColor='Green';   $St='[OK]' }
 
-            $TopProcesses = Get-Process | Where-Object { $_.WorkingSet -gt 0 } |
-                Sort-Object WorkingSet -Descending | Select-Object -First 5
-
-            $Scripts = @(Get-CimInstance Win32_Process -Filter "Name='powershell.exe' OR Name='pwsh.exe'" -ErrorAction SilentlyContinue |
-                Where-Object { $_.CommandLine -match "LimparRAM-Inteligente" })
+            # WorkingSet64: o WorkingSet (int32) estoura em processos >2GB e o
+            # filtro -gt 0 derrubava justo os maiores consumidores do top-5.
+            $TopProcesses = Get-Process | Where-Object { $_.WorkingSet64 -gt 0 } |
+                Sort-Object WorkingSet64 -Descending | Select-Object -First 5
 
             $hb = $null
             if (Test-Path $hbFile) { try { $hb = Get-Content $hbFile -Raw | ConvertFrom-Json } catch {} }
@@ -60,6 +65,8 @@ function Show-RAMDashboard {
                 if ($Task) { $LastRun = ($Task | Get-ScheduledTaskInfo).LastRunTime }
             } catch {}
 
+            # Log do dia recalculado por frame (o dashboard pode virar a meia-noite aberto)
+            $logFile = Join-Path $logDir "RAMMap_$(Get-Date -Format 'yyyy-MM-dd').log"
             $LastLog = $null
             if (Test-Path $logFile) {
                 $LastLog = Get-Content $logFile -Tail 1 -ErrorAction SilentlyContinue
@@ -89,14 +96,16 @@ function Show-RAMDashboard {
             L (S "TOP 5 PROCESSOS (Memoria):" 'Cyan')
             $rank = 1
             foreach ($proc in $TopProcesses) {
-                $MemMB = [math]::Round($proc.WorkingSet / 1MB, 1)
+                $MemMB = [math]::Round($proc.WorkingSet64 / 1MB, 1)
                 L (S ("  {0}. {1} {2,10} MB" -f $rank, $proc.ProcessName.PadRight(22), $MemMB) 'Gray')
                 $rank++
             }
             L (S "")
             L (S "STATUS DO MONITOR:" 'Cyan')
-            if ($Scripts.Count -gt 0) { L (S ("  [OK] Monitor: ATIVO ({0} instancia)" -f $Scripts.Count) 'Green') }
-            else                      { L (S "  [PAUSADO] Monitor: INATIVO" 'Yellow') }
+            # Fonte unica: heartbeat. (O check antigo por CommandLine nao via o
+            # monitor iniciado pelo Menu, que roda in-process como Menu.ps1.)
+            if ($hb -and -not $hbStale) { L (S ("  [OK] Monitor: ATIVO (PID {0})" -f $hb.PID) 'Green') }
+            else                        { L (S "  [PAUSADO] Monitor: INATIVO" 'Yellow') }
             if ($hb -and $hbStale) {
                 L (S "  [AVISO] Heartbeat desatualizado - monitor pode ter sido finalizado a forca" 'Yellow')
             } elseif ($hb) {

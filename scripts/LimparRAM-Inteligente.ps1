@@ -1,20 +1,20 @@
 # ====================== BEGIN NAV INDEX ======================
 # NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
-#   L58    Write-Log
-#   L86    Confirm-RAMMapEula
-#   L102   Invoke-RAMClean
-#   L256   Invoke-CleanTracked
-#   L272   Restore-CleanState
-#   L281   Save-CleanState
-#   L292   Write-Heartbeat
-#   L326   Write-CycleLog
-#   L336   Test-MemoryAndClean
-#   L420   Wait-MonitorInterval
-#   L439   Start-RAMMonitor
-#   L498   Test-Admin
-#   L504   Assert-Admin
-#   L515   Show-Status
-#   L547   Menu interativo (sem params) -----------------------------------------
+#   L57    Write-Log
+#   L72    Confirm-RAMMapEula
+#   L88    Invoke-RAMClean
+#   L152   Invoke-RAMMapStep
+#   L242   Invoke-CleanTracked
+#   L258   Restore-CleanState
+#   L267   Save-CleanState
+#   L278   Write-Heartbeat
+#   L312   Write-CycleLog
+#   L322   Test-MemoryAndClean
+#   L406   Wait-MonitorInterval
+#   L425   Start-RAMMonitor
+#   L499   Assert-Admin
+#   L510   Show-Status
+#   L542   Menu interativo (sem params) -----------------------------------------
 # ======================= END NAV INDEX =======================
 
 [CmdletBinding(DefaultParameterSetName = 'Menu')]
@@ -40,9 +40,7 @@ $ErrorActionPreference = 'Stop'
 # verdade - este script nao reimplementa mais nada disso (antes era duplicado).
 . (Join-Path $PSScriptRoot "RamCommon.ps1")
 
-$Root          = $Global:RamRoot
 $ConfigPath    = $Global:RamConfigPath
-$LogPath       = Join-Path $Global:RamLogDir "RAMMap_$(Get-Date -Format 'yyyy-MM-dd').log"
 $HeartbeatPath = Join-Path $Global:RamLogDir "monitor-status.json"
 $RAMMapPath    = Resolve-RAMMap
 if (-not $RAMMapPath) { $RAMMapPath = Join-Path $PSScriptRoot "RAMMap.exe" }  # default p/ msg de erro
@@ -53,24 +51,12 @@ $script:RunMode = $PSCmdlet.ParameterSetName
 # ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
-$LevelRank = @{ DEBUG = 0; INFO = 1; WARNING = 2; ERROR = 3 }
-
+# Delegado ao Write-RamLog (RamCommon), que calcula o arquivo do dia POR
+# CHAMADA: monitor 24/7 vira a meia-noite sem prender o log no dia do boot.
+# Aqui so injeta o LogLevel corrente da config (recarregavel em runtime).
 function Write-Log {
     param([string]$Message, [string]$Level = "INFO")
-
-    # Respeita LogLevel configurado (DEBUG some quando LogLevel=INFO, etc.)
-    if ($LevelRank[$Level] -lt $LevelRank[$Config.LogLevel]) { return }
-
-    $Timestamp  = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    $LogMessage = "[$Timestamp] [$Level] $Message"
-
-    switch ($Level) {
-        "INFO"    { Write-Host $LogMessage -ForegroundColor Green }
-        "WARNING" { Write-Host $LogMessage -ForegroundColor Yellow }
-        "ERROR"   { Write-Host $LogMessage -ForegroundColor Red }
-        "DEBUG"   { Write-Host $LogMessage -ForegroundColor Gray }
-    }
-    Add-Content -Path $LogPath -Value $LogMessage -Force
+    Write-RamLog -Message $Message -Level $Level -MinLevel $Config.LogLevel
 }
 
 # ---------------------------------------------------------------------------
@@ -437,6 +423,21 @@ function Wait-MonitorInterval {
 }
 
 function Start-RAMMonitor {
+    # Single-instance: tarefa em 2o plano + monitor do menu rodando juntos =
+    # limpeza duplicada e heartbeat sobrescrito. Heartbeat fresco (<3min) de
+    # outro PID vivo -> aborta esta instancia. PID reciclado passa se o
+    # heartbeat estiver velho; falso positivo exige reuso em <3min (raro).
+    if (Test-Path $HeartbeatPath) {
+        try {
+            $hb  = Get-Content $HeartbeatPath -Raw | ConvertFrom-Json
+            $age = ((Get-Date) - [datetime]$hb.UpdatedAt).TotalSeconds
+            if ($hb.PID -ne $PID -and $age -lt 180 -and (Get-Process -Id $hb.PID -ErrorAction SilentlyContinue)) {
+                Write-Log "Ja existe um monitor ativo (PID $($hb.PID), heartbeat ha $([int]$age)s) - abortando esta instancia." "WARNING"
+                return
+            }
+        } catch {}
+    }
+
     # Formata o limite mostrando % e GB quando ambos estiverem configurados.
     $parts = @()
     if ($null -ne $Config.ThresholdClean   -and "$($Config.ThresholdClean)"   -ne '') { $parts += ("$($Config.ThresholdClean)"   -replace '%','') + '%' }
@@ -493,14 +494,8 @@ function Start-RAMMonitor {
 }
 
 # ---------------------------------------------------------------------------
-# Admin
+# Admin (Test-Admin vem do RamCommon)
 # ---------------------------------------------------------------------------
-function Test-Admin {
-    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
-    (New-Object Security.Principal.WindowsPrincipal $id).IsInRole(
-        [Security.Principal.WindowsBuiltInRole]::Administrator)
-}
-
 function Assert-Admin {
     if (-not (Test-Admin)) {
         Write-Host "[ERRO] Esta operacao requer privilegios de ADMINISTRADOR!" -ForegroundColor Red
@@ -578,7 +573,7 @@ switch ($Choice) {
     "4" {
         Write-Host "`nEditando $ConfigPath" -ForegroundColor Cyan
         notepad $ConfigPath
-        Write-Host "Reinicie o script para aplicar." -ForegroundColor Green
+        Write-Host "Config salva vale no proximo ciclo (monitor recarrega sozinho)." -ForegroundColor Green
     }
     default { Write-Host "Saindo..." -ForegroundColor Yellow; exit 0 }
 }

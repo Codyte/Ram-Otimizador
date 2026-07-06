@@ -1,30 +1,32 @@
 # ====================== BEGIN NAV INDEX ======================
 # NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
-#   L44    Resolve-RAMMap
-#   L140   Initialize-NativeClean
-#   L154   Invoke-NativeCleanStep
-#   L173   Clear-RamOldLogs
-#   L186   Get-RamConfigSchema
-#   L210   Get-RamConfigComments
-#   L231   Convert-RamLegacyConfig
-#   L246   Backup-RamInvalidConfig
-#   L262   ConvertTo-RamIntSetting
-#   L286   ConvertTo-RamBoolSetting
-#   L301   ConvertTo-RamThresholdSetting
-#   L340   Normalize-RamConfig
-#   L387   Read-RamConfig
-#   L417   Write-RamConfig
-#   L435   ConvertTo-UsagePercentToken
-#   L470   Resolve-UsageThresholdPercent
-#   L482   Format-UsageThreshold
-#   L502   Get-RamProfiles
-#   L563   Apply-RamProfile
-#   L583   Get-MemoryStats
-#   L598   Get-StandbyListMB
-#   L616   Get-HeavyProcesses
-#   L629   Get-SystemInfo
-#   L655   Get-RecommendedProfile
-#   L702   Write-RamLog
+#   L45    Test-Admin
+#   L53    Resolve-RAMMap
+#   L149   Initialize-NativeClean
+#   L163   Invoke-NativeCleanStep
+#   L183   Clear-RamOldLogs
+#   L203   Get-RamConfigSchema
+#   L227   Get-RamConfigComments
+#   L248   Convert-RamLegacyConfig
+#   L263   Backup-RamInvalidConfig
+#   L279   ConvertTo-RamIntSetting
+#   L303   ConvertTo-RamBoolSetting
+#   L322   ConvertFrom-RamThresholdToken
+#   L341   ConvertTo-RamThresholdSetting
+#   L364   Normalize-RamConfig
+#   L411   Read-RamConfig
+#   L441   Write-RamConfig
+#   L459   ConvertTo-UsagePercentToken
+#   L476   Resolve-UsageThresholdPercent
+#   L488   Format-UsageThreshold
+#   L508   Get-RamProfiles
+#   L569   Apply-RamProfile
+#   L589   Get-MemoryStats
+#   L604   Get-StandbyListMB
+#   L622   Get-HeavyProcesses
+#   L635   Get-SystemInfo
+#   L661   Get-RecommendedProfile
+#   L708   Write-RamLog
 # ======================= END NAV INDEX =======================
 
 # Raiz portatil: pasta do projeto = pai da pasta 'scripts' onde este arquivo esta.
@@ -37,6 +39,13 @@ $Global:RamTaskName   = "LimparRAM-Monitoramento"
 
 foreach ($d in @($Global:RamLogDir, (Split-Path $Global:RamConfigPath))) {
     if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
+}
+
+# Checagem de admin compartilhada (Menu/engine/configurador usam esta copia unica).
+function Test-Admin {
+    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+    (New-Object Security.Principal.WindowsPrincipal $id).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
 # Auto-deteccao do RAMMap. Prioriza a copia local (.\scripts\RAMMap.exe),
@@ -169,7 +178,8 @@ function Invoke-NativeCleanStep {
     return $false
 }
 
-# Rotacao de logs: apaga logs diarios mais antigos que N dias.
+# Rotacao de logs: apaga logs diarios mais antigos que N dias e limita o
+# historico CSV de limpezas.
 function Clear-RamOldLogs {
     param([int]$Days = 30)
     try {
@@ -177,6 +187,13 @@ function Clear-RamOldLogs {
         Get-ChildItem $Global:RamLogDir -Filter 'RAMMap_*.log' -ErrorAction SilentlyContinue |
             Where-Object { $_.LastWriteTime -lt $cut } |
             Remove-Item -Force -ErrorAction SilentlyContinue
+        # ponytail: cap grosseiro por tamanho (cabecalho + ultimas 5000 linhas);
+        # rotacao com historico integral so se algum dia precisar auditar tudo.
+        $hist = Join-Path $Global:RamLogDir 'cleanup-history.csv'
+        if ((Test-Path $hist) -and (Get-Item $hist).Length -gt 2MB) {
+            $lines = Get-Content $hist
+            Set-Content -Path $hist -Value (@($lines[0]) + ($lines | Select-Object -Last 5000)) -Encoding UTF8
+        }
     } catch {}
 }
 
@@ -298,6 +315,29 @@ function ConvertTo-RamBoolSetting {
     return $Default
 }
 
+# Parser unico de token de limite ("80", "80%", "10.5gb", "10,5 GB", "512mb")
+# -> @{ Num = [double]; Unit = 'percent'|'gb'|'mb' }. $null se vazio/invalido.
+# Fonte unica: validacao (ConvertTo-RamThresholdSetting) e conversao
+# (ConvertTo-UsagePercentToken) usam este mesmo parse.
+function ConvertFrom-RamThresholdToken {
+    param($Raw, [ValidateSet('percent','gb')][string]$DefaultUnit = 'percent')
+    if ($null -eq $Raw) { return $null }
+    if ($Raw -is [ValueType] -and $Raw -isnot [bool]) {
+        return @{ Num = [double]$Raw; Unit = $DefaultUnit }
+    }
+    $s = ([string]$Raw).Trim().ToLowerInvariant() -replace ',', '.'
+    if ($s -eq '' -or $s -notmatch '^([0-9]*\.?[0-9]+)\s*(%|gb|g|mb|m)?$') { return $null }
+    $unit = switch ($matches[2]) {
+        '%'  { 'percent' }
+        'gb' { 'gb' }
+        'g'  { 'gb' }
+        'mb' { 'mb' }
+        'm'  { 'mb' }
+        default { $DefaultUnit }
+    }
+    @{ Num = [double]$matches[1]; Unit = $unit }
+}
+
 function ConvertTo-RamThresholdSetting {
     param(
         [Parameter(Mandatory)][string]$Name,
@@ -308,29 +348,13 @@ function ConvertTo-RamThresholdSetting {
 
     if ($null -eq $Value -or "$Value".Trim() -eq '') { return $null }
 
-    $num = $null
-    $unit = $DefaultUnit
-    if ($Value -is [ValueType] -and $Value -isnot [bool]) {
-        $num = [double]$Value
-    } else {
-        $s = ([string]$Value).Trim().ToLowerInvariant() -replace ',', '.'
-        if ($s -notmatch '^([0-9]*\.?[0-9]+)\s*(%|gb|g|mb|m)?$') {
-            Write-Warning "Config '$Name' invalida ('$Value'); usando padrao $Default."
-            return $Default
-        }
-        $num = [double]$matches[1]
-        $unit = switch ($matches[2]) {
-            '%'  { 'percent' }
-            'gb' { 'gb' }
-            'g'  { 'gb' }
-            'mb' { 'mb' }
-            'm'  { 'mb' }
-            default { $DefaultUnit }
-        }
+    $tok = ConvertFrom-RamThresholdToken -Raw $Value -DefaultUnit $DefaultUnit
+    if ($null -eq $tok) {
+        Write-Warning "Config '$Name' invalida ('$Value'); usando padrao $Default."
+        return $Default
     }
-
-    if ($num -lt 0 -or ($unit -eq 'percent' -and $num -gt 100) -or
-        ($unit -eq 'gb' -and $num -gt 1048576) -or ($unit -eq 'mb' -and $num -gt 1073741824)) {
+    if ($tok.Num -lt 0 -or ($tok.Unit -eq 'percent' -and $tok.Num -gt 100) -or
+        ($tok.Unit -eq 'gb' -and $tok.Num -gt 1048576) -or ($tok.Unit -eq 'mb' -and $tok.Num -gt 1073741824)) {
         Write-Warning "Config '$Name' fora do intervalo: $Value; usando padrao $Default."
         return $Default
     }
@@ -438,30 +462,12 @@ function ConvertTo-UsagePercentToken {
         [ValidateSet('percent', 'gb')][string]$DefaultUnit = 'percent',
         [double]$TotalGB = 0
     )
-    if ($null -eq $Raw) { return $null }
-
-    if ($Raw -is [ValueType] -and $Raw -isnot [bool]) {
-        $num  = [double]$Raw
-        $unit = $DefaultUnit
-    } else {
-        $s = ([string]$Raw).Trim().ToLowerInvariant() -replace ',', '.'
-        if ($s -eq '') { return $null }
-        if ($s -notmatch '^([0-9]*\.?[0-9]+)\s*(%|gb|g|mb|m)?$') { return $null }
-        $num  = [double]$matches[1]
-        $unit = switch ($matches[2]) {
-            '%'     { 'percent' }
-            'gb'    { 'gb' }
-            'g'     { 'gb' }
-            'mb'    { 'mb' }
-            'm'     { 'mb' }
-            default { $DefaultUnit }
-        }
-    }
-
-    switch ($unit) {
-        'percent' { return $num }
-        'gb'      { if ($TotalGB -gt 0) { return ($num / $TotalGB) * 100 } else { return $null } }
-        'mb'      { if ($TotalGB -gt 0) { return (($num / 1024) / $TotalGB) * 100 } else { return $null } }
+    $tok = ConvertFrom-RamThresholdToken -Raw $Raw -DefaultUnit $DefaultUnit
+    if ($null -eq $tok) { return $null }
+    switch ($tok.Unit) {
+        'percent' { return $tok.Num }
+        'gb'      { if ($TotalGB -gt 0) { return ($tok.Num / $TotalGB) * 100 } else { return $null } }
+        'mb'      { if ($TotalGB -gt 0) { return (($tok.Num / 1024) / $TotalGB) * 100 } else { return $null } }
     }
 }
 
