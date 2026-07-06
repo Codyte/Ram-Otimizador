@@ -6,3 +6,4 @@ config/*.bad-*.json
 
 # Cache do navindex
 .navindex-cache.json
+config/RamCleanerConfig.json
