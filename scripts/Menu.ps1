@@ -148,6 +148,34 @@ function Show-Logs {
 }
 
 # ---------------------------------------------------------------------------
+function Show-ResumoSemana {
+    Show-Header
+    Write-Host "`n[RESUMO DA SEMANA - ultimos 7 dias]`n" -ForegroundColor Cyan
+    $csv = Join-Path $Global:RamLogDir "cleanup-history.csv"
+    if (-not (Test-Path $csv)) { Write-Host "(sem historico ainda - nenhuma limpeza registrada)" -ForegroundColor Gray; Read-Host "`nEnter para voltar"; return }
+
+    # Parse invariante: FreedGB/percent podem sair com virgula decimal em PT-BR.
+    $inv = [Globalization.CultureInfo]::InvariantCulture
+    function ToNum($s) { $v = 0.0; [void][double]::TryParse(("$s" -replace ',', '.'), [Globalization.NumberStyles]::Float, $inv, [ref]$v); $v }
+
+    $limite = (Get-Date).AddDays(-7)
+    $rows = @(Import-Csv $csv | Where-Object {
+        try { [datetime]::ParseExact($_.Timestamp, 's', $inv) -ge $limite } catch { $false }
+    })
+    if ($rows.Count -eq 0) { Write-Host "(nenhuma limpeza nos ultimos 7 dias)" -ForegroundColor Gray; Read-Host "`nEnter para voltar"; return }
+
+    $freed = ($rows | ForEach-Object { ToNum $_.FreedGB } | Where-Object { $_ -gt 0 } | Measure-Object -Sum).Sum
+    $peak  = ($rows | ForEach-Object { ToNum $_.BeforePercent } | Measure-Object -Maximum).Maximum
+    $top   = $rows | Group-Object Action | Sort-Object Count -Descending | Select-Object -First 1
+    Write-Host (" Limpezas         : {0}" -f $rows.Count) -ForegroundColor White
+    Write-Host (" RAM liberada     : ~{0} GB (soma dos ganhos)" -f [math]::Round([double]$freed, 2)) -ForegroundColor Green
+    Write-Host (" Pico de uso      : {0}%" -f [math]::Round([double]$peak, 1)) -ForegroundColor Yellow
+    Write-Host (" Acao mais usada  : {0} ({1}x)" -f $top.Name, $top.Count) -ForegroundColor White
+    Write-Host (" Periodo          : {0}  ->  {1}" -f $rows[0].Timestamp, $rows[-1].Timestamp) -ForegroundColor DarkGray
+    Read-Host "`nEnter para voltar"
+}
+
+# ---------------------------------------------------------------------------
 # Loop principal
 # ---------------------------------------------------------------------------
 :menu while ($true) {
@@ -162,6 +190,7 @@ function Show-Logs {
     Write-Host "  7 - Testar sistema (RAMMap, permissoes, arquivos)" -ForegroundColor White
     Write-Host "  8 - Ver logs de hoje" -ForegroundColor White
     Write-Host "  9 - Editar configuracao (JSON)" -ForegroundColor White
+    Write-Host "  R - Resumo da semana (limpezas, RAM liberada, pico)" -ForegroundColor White
     Write-Host "  T - Iniciar/Parar a tarefa em 2o plano" -ForegroundColor White
     Write-Host "  0 - Sair" -ForegroundColor White
     Write-Host ""
@@ -181,6 +210,7 @@ function Show-Logs {
         "7" { & (Join-Path $ScriptDir "Teste-LimparRAM.ps1") }
         "8" { Show-Logs }
         "9" { notepad $Global:RamConfigPath }
+        "R" { Show-ResumoSemana }
         "T" {
             $t = Get-ScheduledTask -TaskName $Global:RamTaskName -ErrorAction SilentlyContinue
             if (-not $t) {

@@ -6,12 +6,12 @@
 #   L58    Confirm-SystemRAMMapEula
 #   L71    New-MonitorTask
 #   L106   New-PeriodicTask
-#   L150   Add-ContextMenu
-#   L176   Remove-ContextMenu
-#   L186   Remove-AutoExec
-#   L198   Get-MonitorProcesses
-#   L207   Invoke-FullCleanup
-#   L271   Show-TaskStatus
+#   L153   Add-ContextMenu
+#   L179   Remove-ContextMenu
+#   L189   Remove-AutoExec
+#   L201   Get-MonitorProcesses
+#   L210   Invoke-FullCleanup
+#   L274   Show-TaskStatus
 # ======================= END NAV INDEX =======================
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -141,7 +141,10 @@ function New-PeriodicTask {
 # HKCU = por usuario, funciona em qualquer maquina sem tocar HKLM.
 # Win11: aparece dentro de "Mostrar mais opcoes" (menu classico).
 # ---------------------------------------------------------------------------
-$CtxLauncher = Join-Path $ScriptDir "Limpeza-ContextMenu.ps1"
+# Registro chama wscript+shim.vbs (sem console) em vez de powershell.exe direto,
+# senao a janela azul pisca antes de o -WindowStyle Hidden valer (flash do Explorer).
+$CtxShim     = Join-Path $ScriptDir "Limpeza-ContextMenu.vbs"
+$CtxWScript  = Join-Path $env:SystemRoot "System32\wscript.exe"
 $CtxBases    = @(
     'HKCU:\Software\Classes\Directory\Background\shell\RamOtimizador',  # fundo de pasta
     'HKCU:\Software\Classes\DesktopBackground\shell\RamOtimizador'      # area de trabalho
@@ -166,7 +169,7 @@ function Add-ContextMenu {
             New-Item -Path "$sub\command" -Force | Out-Null
             Set-ItemProperty -Path $sub -Name '(default)' -Value $items[$k][0]
             Set-ItemProperty -Path "$sub\command" -Name '(default)' -Value `
-                ("`"{0}`" -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"{1}`" -Action {2}" -f $PowerShellExe, $CtxLauncher, $items[$k][1])
+                ("`"{0}`" //nologo `"{1}`" {2}" -f $CtxWScript, $CtxShim, $items[$k][1])
         }
     }
     Write-Host "[OK] Menu de contexto criado: botao direito no fundo da area de trabalho/pasta -> Ram-Otimizador > 1-5." -ForegroundColor Green
