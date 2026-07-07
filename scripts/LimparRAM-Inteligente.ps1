@@ -14,7 +14,7 @@
 #   L421   Start-RAMMonitor
 #   L495   Assert-Admin
 #   L506   Show-Status
-#   L538   Menu interativo (sem params) -----------------------------------------
+#   L538   Sem params: este script e o motor, nao a interface -------------------
 # ======================= END NAV INDEX =======================
 
 [CmdletBinding(DefaultParameterSetName = 'Menu')]
@@ -535,41 +535,10 @@ switch ($PSCmdlet.ParameterSetName) {
     'Clean'   { Assert-Admin; $null = Invoke-RAMClean -Type $Clean; return }
 }
 
-# --- Menu interativo (sem params) -----------------------------------------
-Assert-Admin
-
-Write-Host "`n=== LIMPADOR INTELIGENTE DE RAM ===" -ForegroundColor Cyan
-Write-Host "1 - Iniciar monitoramento continuo" -ForegroundColor Yellow
-Write-Host "2 - Executar limpeza manual unica" -ForegroundColor Yellow
-Write-Host "3 - Ver status atual de RAM" -ForegroundColor Yellow
-Write-Host "4 - Editar configuracoes" -ForegroundColor Yellow
-Write-Host "5 - Sair" -ForegroundColor Yellow
-
-$Choice = Read-Host "`nEscolha uma opcao"
-
-switch ($Choice) {
-    "1" {
-        Write-Host "`nMonitorando RAM... pressione Q para parar`n" -ForegroundColor Green
-        Start-RAMMonitor
-    }
-    "2" {
-        Show-Status
-        Write-Host "Tipo de limpeza:" -ForegroundColor Yellow
-        Write-Host "1 - Working Sets" -ForegroundColor Gray
-        Write-Host "2 - Modified Page List" -ForegroundColor Gray
-        Write-Host "3 - Standby List" -ForegroundColor Gray
-        Write-Host "4 - All (1 -> 2 -> 3)" -ForegroundColor Gray
-        Write-Host "5 - Safe (1 -> 2, ideal antes de desligar)" -ForegroundColor Gray
-        $Type = Read-Host "Escolha"
-        $TypeMap = @{ "1" = "WorkingSets"; "2" = "ModifiedPageList"; "3" = "Standby"; "4" = "All"; "5" = "Safe" }
-        if ($TypeMap.ContainsKey($Type)) { $null = Invoke-RAMClean -Type $TypeMap[$Type] }
-        else { Write-Host "Opcao invalida." -ForegroundColor Red }
-    }
-    "3" { Show-Status }
-    "4" {
-        Write-Host "`nEditando $ConfigPath" -ForegroundColor Cyan
-        notepad $ConfigPath
-        Write-Host "Config salva vale no proximo ciclo (monitor recarrega sozinho)." -ForegroundColor Green
-    }
-    default { Write-Host "Saindo..." -ForegroundColor Yellow; exit 0 }
-}
+# --- Sem params: este script e o motor, nao a interface ---------------------
+# A UI (analise, perfis, limpeza manual, dashboard, config, agendamento) vive no
+# Menu.ps1. Rodar o engine cru mostra o status e aponta p/ la, em vez de manter
+# um segundo menu duplicado.
+Show-Status
+Write-Host "Este e o MOTOR. Para o menu completo rode Menu.ps1 (ou INICIAR.bat)." -ForegroundColor Cyan
+Write-Host "Uso direto: -Monitor | -Once | -Status | -Clean <tipo>" -ForegroundColor DarkGray
