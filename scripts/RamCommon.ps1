@@ -1,32 +1,33 @@
 # ====================== BEGIN NAV INDEX ======================
 # NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
-#   L45    Test-Admin
-#   L53    Resolve-RAMMap
-#   L149   Initialize-NativeClean
-#   L163   Invoke-NativeCleanStep
-#   L183   Clear-RamOldLogs
-#   L203   Get-RamConfigSchema
-#   L227   Get-RamConfigComments
-#   L248   Convert-RamLegacyConfig
-#   L263   Backup-RamInvalidConfig
-#   L279   ConvertTo-RamIntSetting
-#   L303   ConvertTo-RamBoolSetting
-#   L322   ConvertFrom-RamThresholdToken
-#   L341   ConvertTo-RamThresholdSetting
-#   L364   Normalize-RamConfig
-#   L411   Read-RamConfig
-#   L441   Write-RamConfig
-#   L459   ConvertTo-UsagePercentToken
-#   L476   Resolve-UsageThresholdPercent
-#   L488   Format-UsageThreshold
-#   L508   Get-RamProfiles
-#   L569   Apply-RamProfile
-#   L589   Get-MemoryStats
-#   L604   Get-StandbyListMB
-#   L622   Get-HeavyProcesses
-#   L635   Get-SystemInfo
-#   L661   Get-RecommendedProfile
-#   L708   Write-RamLog
+#   L46    Test-Admin
+#   L55    Set-RAMMapEulaKey
+#   L65    Resolve-RAMMap
+#   L161   Initialize-NativeClean
+#   L175   Invoke-NativeCleanStep
+#   L195   Clear-RamOldLogs
+#   L215   Get-RamConfigSchema
+#   L239   Get-RamConfigComments
+#   L260   Convert-RamLegacyConfig
+#   L275   Backup-RamInvalidConfig
+#   L291   ConvertTo-RamIntSetting
+#   L315   ConvertTo-RamBoolSetting
+#   L334   ConvertFrom-RamThresholdToken
+#   L353   ConvertTo-RamThresholdSetting
+#   L376   Normalize-RamConfig
+#   L423   Read-RamConfig
+#   L453   Write-RamConfig
+#   L471   ConvertTo-UsagePercentToken
+#   L488   Resolve-UsageThresholdPercent
+#   L500   Format-UsageThreshold
+#   L520   Get-RamProfiles
+#   L581   Apply-RamProfile
+#   L601   Get-MemoryStats
+#   L616   Get-StandbyListMB
+#   L634   Get-HeavyProcesses
+#   L647   Get-SystemInfo
+#   L673   Get-RecommendedProfile
+#   L720   Write-RamLog
 # ======================= END NAV INDEX =======================
 
 # Raiz portatil: pasta do projeto = pai da pasta 'scripts' onde este arquivo esta.
@@ -46,6 +47,17 @@ function Test-Admin {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
     (New-Object Security.Principal.WindowsPrincipal $id).IsInRole(
         [Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+# Aceita o EULA do RAMMap numa colmeia de registro (HKCU do usuario ou S-1-5-18
+# do SYSTEM). Retorna $true se mudou algo, $false se ja estava aceito. O logging
+# fica no chamador porque cada contexto usa canal diferente (Write-Log vs Write-Host).
+function Set-RAMMapEulaKey {
+    param([Parameter(Mandatory)][string]$RegPath)
+    if (-not (Test-Path $RegPath)) { New-Item -Path $RegPath -Force | Out-Null }
+    if ((Get-ItemProperty -Path $RegPath -Name 'EulaAccepted' -ErrorAction SilentlyContinue).EulaAccepted -eq 1) { return $false }
+    New-ItemProperty -Path $RegPath -Name 'EulaAccepted' -Value 1 -PropertyType DWord -Force | Out-Null
+    return $true
 }
 
 # Auto-deteccao do RAMMap. Prioriza a copia local (.\scripts\RAMMap.exe),

@@ -2,19 +2,19 @@
 # NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
 #   L57    Write-Log
 #   L72    Confirm-RAMMapEula
-#   L88    Invoke-RAMClean
-#   L152   Invoke-RAMMapStep
-#   L242   Invoke-CleanTracked
-#   L258   Restore-CleanState
-#   L267   Save-CleanState
-#   L278   Write-Heartbeat
-#   L312   Write-CycleLog
-#   L322   Test-MemoryAndClean
-#   L406   Wait-MonitorInterval
-#   L425   Start-RAMMonitor
-#   L499   Assert-Admin
-#   L510   Show-Status
-#   L542   Menu interativo (sem params) -----------------------------------------
+#   L84    Invoke-RAMClean
+#   L148   Invoke-RAMMapStep
+#   L238   Invoke-CleanTracked
+#   L254   Restore-CleanState
+#   L263   Save-CleanState
+#   L274   Write-Heartbeat
+#   L308   Write-CycleLog
+#   L318   Test-MemoryAndClean
+#   L402   Wait-MonitorInterval
+#   L421   Start-RAMMonitor
+#   L495   Assert-Admin
+#   L506   Show-Status
+#   L538   Menu interativo (sem params) -----------------------------------------
 # ======================= END NAV INDEX =======================
 
 [CmdletBinding(DefaultParameterSetName = 'Menu')]
@@ -72,11 +72,7 @@ $script:EulaEnsured = $false
 function Confirm-RAMMapEula {
     if ($script:EulaEnsured) { return }
     try {
-        $k = 'HKCU:\Software\Sysinternals\RAMMap'
-        if (-not (Test-Path $k)) { New-Item -Path $k -Force | Out-Null }
-        $cur = (Get-ItemProperty -Path $k -Name 'EulaAccepted' -ErrorAction SilentlyContinue).EulaAccepted
-        if ($cur -ne 1) {
-            New-ItemProperty -Path $k -Name 'EulaAccepted' -Value 1 -PropertyType DWord -Force | Out-Null
+        if (Set-RAMMapEulaKey 'HKCU:\Software\Sysinternals\RAMMap') {
             Write-Log "EULA do RAMMap aceito automaticamente para este usuario (necessario p/ rodar em 2o plano/SYSTEM)." "INFO"
         }
         $script:EulaEnsured = $true

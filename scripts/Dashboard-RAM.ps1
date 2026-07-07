@@ -17,6 +17,11 @@ function Show-RAMDashboard {
     $prevCount = 0
     $bar = "========================================================"
 
+    # Helpers de montagem de frame: L adiciona linha, S monta segmento colorido.
+    # Definidos uma vez (nao por iteracao) — usam $script:frame no momento da chamada.
+    function L { param([object[]]$Segs) $null = $script:frame.Add($Segs) }
+    function S { param($t,$c='Gray') @{ T = [string]$t; C = $c } }
+
     try { [Console]::CursorVisible = $false } catch {}
     try {
         while ($true) {
@@ -75,8 +80,6 @@ function Show-RAMDashboard {
 
             # ===== FASE 2: MONTAR FRAME (linhas com segmentos coloridos) =====
             $script:frame = New-Object System.Collections.ArrayList
-            function L { param([object[]]$Segs) $null = $script:frame.Add($Segs) }
-            function S { param($t,$c='Gray') @{ T = [string]$t; C = $c } }
 
             L (S $bar 'Cyan')
             L (S "        DASHBOARD DE MONITORAMENTO DE RAM" 'Cyan')

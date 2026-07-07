@@ -4,14 +4,14 @@
 #   L40    Test-TaskRunsThisEngine
 #   L49    Remove-ExistingTask
 #   L58    Confirm-SystemRAMMapEula
-#   L73    New-MonitorTask
-#   L108   New-PeriodicTask
-#   L152   Add-ContextMenu
-#   L178   Remove-ContextMenu
-#   L188   Remove-AutoExec
-#   L200   Get-MonitorProcesses
-#   L209   Invoke-FullCleanup
-#   L273   Show-TaskStatus
+#   L71    New-MonitorTask
+#   L106   New-PeriodicTask
+#   L150   Add-ContextMenu
+#   L176   Remove-ContextMenu
+#   L186   Remove-AutoExec
+#   L198   Get-MonitorProcesses
+#   L207   Invoke-FullCleanup
+#   L271   Show-TaskStatus
 # ======================= END NAV INDEX =======================
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -56,10 +56,8 @@ function Remove-ExistingTask {
 # fica invisivel (sessao 0) e a limpeza nao acontece. Aqui (rodando elevado)
 # pre-aceitamos o EULA na colmeia do SYSTEM (S-1-5-18).
 function Confirm-SystemRAMMapEula {
-    $key = 'Registry::HKEY_USERS\S-1-5-18\Software\Sysinternals\RAMMap'
     try {
-        if (-not (Test-Path $key)) { New-Item -Path $key -Force | Out-Null }
-        New-ItemProperty -Path $key -Name 'EulaAccepted' -Value 1 -PropertyType DWord -Force | Out-Null
+        Set-RAMMapEulaKey 'Registry::HKEY_USERS\S-1-5-18\Software\Sysinternals\RAMMap' | Out-Null
         Write-Host "[OK] EULA do RAMMap aceito para a conta SYSTEM (necessario p/ rodar em 2o plano)." -ForegroundColor Green
     } catch {
         Write-Host "[AVISO] Nao consegui aceitar o EULA do RAMMap p/ SYSTEM: $($_.Exception.Message)" -ForegroundColor Yellow
@@ -168,7 +166,7 @@ function Add-ContextMenu {
             New-Item -Path "$sub\command" -Force | Out-Null
             Set-ItemProperty -Path $sub -Name '(default)' -Value $items[$k][0]
             Set-ItemProperty -Path "$sub\command" -Name '(default)' -Value `
-                ("`"{0}`" -NoProfile -ExecutionPolicy Bypass -File `"{1}`" -Action {2}" -f $PowerShellExe, $CtxLauncher, $items[$k][1])
+                ("`"{0}`" -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"{1}`" -Action {2}" -f $PowerShellExe, $CtxLauncher, $items[$k][1])
         }
     }
     Write-Host "[OK] Menu de contexto criado: botao direito no fundo da area de trabalho/pasta -> Ram-Otimizador > 1-5." -ForegroundColor Green

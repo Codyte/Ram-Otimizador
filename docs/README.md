@@ -25,7 +25,7 @@ Clique direito em **`INICIAR.bat`** → *Executar como administrador*. Ele auto-
 3 - Iniciar MONITOR continuo (primeiro plano)
 4 - Limpeza manual rapida
 5 - Dashboard ao vivo
-6 - Configurar auto-execucao / agendamento
+6 - Configurar auto-execucao / agendamento / menu de contexto
 7 - Testar sistema (RAMMap, permissoes, arquivos)
 8 - Ver logs de hoje
 9 - Editar configuracao (JSON)
@@ -45,10 +45,16 @@ No menu, escolha **6 - Configurar auto-execucao**. Opções:
 - **1** = Monitor contínuo no boot/logon (roda como SYSTEM, escondido) — recomendado p/ desktop/games
 - **2** = Verificação periódica leve a cada N min — bom p/ servidor
 - **3** = Ver status da tarefa
-- **4** = Remover auto-execução
+- **4** = Adicionar menu de contexto (botão direito na área de trabalho/pasta → Ram-Otimizador → limpeza 1-5)
+- **5** = Remover menu de contexto
+- **6** = Remover auto-execução (só o agendamento)
+- **7** = Parar tudo e limpar resíduos (mata monitores + remove agendamentos)
 
 > A tarefa roda como **SYSTEM**; o configurador já aceita o EULA do RAMMap p/ essa conta
 > (senão a limpeza em 2º plano não funciona — veja *Troubleshooting*).
+>
+> O menu de contexto (opção 4) instala em HKCU (por usuário, sem admin p/ instalar).
+> Cada ação auto-eleva via UAC ao clicar e roda oculta (sem janela azul).
 
 ---
 
