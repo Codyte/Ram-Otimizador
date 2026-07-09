@@ -76,7 +76,13 @@ details.card summary::before{content:"▸ "}
 details.card[open] summary::before{content:"▾ "}
 details.card[open] summary{margin-bottom:8px}
 
-/* ===== [CSS] Botões de ação ===== */
+/* ===== [CSS] Botões de ação (linha = botão + legenda explícita) ===== */
+.acts{display:flex;flex-direction:column;gap:5px}
+.act{display:flex;align-items:center;gap:9px}
+.act .btn{min-width:100px;text-align:center;flex-shrink:0}
+.act span{font-size:10.5px;color:var(--muted);line-height:1.3}
+.cardnote{font-size:10.5px;color:var(--muted);margin:-4px 0 8px;line-height:1.35}
+summary .hint{letter-spacing:0;text-transform:none;font-size:10px;color:var(--muted);opacity:.75}
 .actions{display:flex;flex-wrap:wrap;gap:6px}
 .btn{border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:6px 10px;font-size:12px}
 .btn:hover{border-color:var(--cool)}
@@ -120,9 +126,9 @@ details.card[open] summary{margin-bottom:8px}
 <header>
   <h1>RAM<b>·</b>OTIMIZADOR</h1>
   <div class="pills">
-    <span class="pill" id="pillMon"><span class="dot"></span>monitor</span>
-    <span class="pill" id="pillTask"><span class="dot"></span>tarefa 2º plano</span>
-    <span class="pill" id="pillProf"><span class="dot"></span>perfil</span>
+    <span class="pill" id="pillMon" title="Limpeza automática: verde = o monitor está vigiando a RAM agora"><span class="dot"></span>monitor</span>
+    <span class="pill" id="pillTask" title="Tarefa agendada do Windows que roda o monitor em 2º plano (no boot)"><span class="dot"></span>tarefa 2º plano</span>
+    <span class="pill" id="pillProf" title="Perfil de configuração ativo ('personalizado' = valores editados a mão)"><span class="dot"></span>perfil</span>
   </div>
 </header>
 
@@ -133,8 +139,8 @@ details.card[open] summary{margin-bottom:8px}
     <div class="hero-stats">
       <div class="stat"><div class="v" id="stUsed">--</div><div class="k">usada</div></div>
       <div class="stat"><div class="v" id="stFree">--</div><div class="k">livre</div></div>
-      <div class="stat"><div class="v cool" id="stSb">--</div><div class="k">standby recuperável</div></div>
-      <div class="stat"><div class="v heat" id="stThr">--</div><div class="k">limite de limpeza</div></div>
+      <div class="stat" title="Cache de páginas já salvas em disco — o Windows solta sob demanda; a limpeza libera de uma vez"><div class="v cool" id="stSb">--</div><div class="k">standby recuperável</div></div>
+      <div class="stat" title="Quando a RAM usada passa disso, o monitor limpa sozinho (ThresholdClean/GB)"><div class="v heat" id="stThr">--</div><div class="k">limite de limpeza</div></div>
     </div>
   </div>
   <div id="stick" role="img" aria-label="Uso de memória"></div>
@@ -147,16 +153,16 @@ details.card[open] summary{margin-bottom:8px}
 
 <div class="grid">
 
-  <!-- ===== [HTML] Ações de limpeza ===== -->
+  <!-- ===== [HTML] Ações de limpeza (legenda explícita por botão) ===== -->
   <section class="card">
     <h2>Limpeza manual</h2>
-    <div class="actions">
-      <button class="btn primary" data-clean="Safe" title="Working Sets → Modified; padrão do dia a dia (maior liberação)">Safe</button>
-      <button class="btn" data-clean="All" title="TUDO: Working Sets → Modified → Standby; bom antes de trocar de tarefa pesada">All</button>
-      <button class="btn" data-clean="SafeStrong" title="Modified + Standby; não toca apps abertos (auto durante jogo)">SafeStrong</button>
-      <button class="btn" data-clean="Standby" title="Só a Standby List">Standby</button>
-      <button class="btn" data-clean="WorkingSets" title="Só Working Sets">Working Sets</button>
-      <button class="btn" data-clean="ModifiedPageList" title="Só Modified Page List">Modified</button>
+    <div class="acts">
+      <div class="act"><button class="btn primary" data-clean="Safe">Safe</button><span>Padrão do dia a dia — maior liberação: apara a memória dos apps + descarrega páginas sujas pro disco</span></div>
+      <div class="act"><button class="btn" data-clean="All">All</button><span>Máximo — tudo, incluindo o cache standby; ideal antes de trocar de tarefa pesada</span></div>
+      <div class="act"><button class="btn" data-clean="SafeStrong">SafeStrong</button><span>Não toca nos apps abertos (zero engasgo) — o monitor usa sozinho quando há jogo aberto</span></div>
+      <div class="act"><button class="btn" data-clean="Standby">Standby</button><span>Só o cache standby (mais leve)</span></div>
+      <div class="act"><button class="btn" data-clean="WorkingSets">Working Sets</button><span>Só apara a memória dos apps abertos</span></div>
+      <div class="act"><button class="btn" data-clean="ModifiedPageList">Modified</button><span>Só descarrega páginas sujas pro disco</span></div>
     </div>
     <div class="result" id="cleanResult"></div>
   </section>
@@ -164,24 +170,25 @@ details.card[open] summary{margin-bottom:8px}
   <!-- ===== [HTML] Tarefa em 2º plano ===== -->
   <section class="card">
     <h2>Tarefa em 2º plano</h2>
-    <div class="actions">
-      <button class="btn" data-task="start">Iniciar</button>
-      <button class="btn" data-task="stop">Parar</button>
-      <button class="btn" data-task="create-monitor" title="Cria/recria a tarefa: monitor contínuo no boot (SYSTEM)">Criar monitor contínuo</button>
+    <p class="cardnote">Monitor automático (tarefa agendada do Windows): vigia a RAM e limpa sozinho quando o uso passa do limite configurado.</p>
+    <div class="acts">
+      <div class="act"><button class="btn" data-task="start">Iniciar</button><span>Liga a tarefa já criada</span></div>
+      <div class="act"><button class="btn" data-task="stop">Parar</button><span>Para o monitor em 2º plano</span></div>
+      <div class="act"><button class="btn" data-task="create-monitor">Criar monitor contínuo</button><span>Cria/recria a tarefa: inicia no boot, roda oculta (SYSTEM)</span></div>
     </div>
     <div class="result" id="taskResult"></div>
   </section>
 
   <!-- ===== [HTML] Perfis (colapsável) ===== -->
   <details class="card full">
-    <summary>Perfis</summary>
+    <summary>Perfis <span class="hint">· presets prontos de limite + ação + ritmo; clique num card para aplicar</span></summary>
     <div class="profiles" id="profiles"></div>
     <div id="recBox"><button class="btn" id="btnRec">Analisar sistema e recomendar perfil</button></div>
   </details>
 
   <!-- ===== [HTML] Configuração (colapsável) ===== -->
   <details class="card full">
-    <summary>Configuração</summary>
+    <summary>Configuração <span class="hint">· todos os campos do JSON; passe o mouse num campo para ver o que ele faz</span></summary>
     <div class="cfg" id="cfgForm">
       <div class="field"><label for="f_ThresholdClean">Limite (%)</label><input id="f_ThresholdClean"></div>
       <div class="field"><label for="f_ThresholdCleanGB">Limite (GB, opcional)</label><input id="f_ThresholdCleanGB" placeholder="vazio = só %"></div>
@@ -209,7 +216,7 @@ details.card[open] summary{margin-bottom:8px}
 
   <!-- ===== [HTML] Histórico + top processos (colapsável) ===== -->
   <details class="card">
-    <summary>Últimos 7 dias · Top processos</summary>
+    <summary>Últimos 7 dias · Top processos <span class="hint">· estatísticas das limpezas + quem mais usa RAM</span></summary>
     <div class="hist">
       <div class="stat"><div class="v" id="h_count">--</div><div class="k">limpezas</div></div>
       <div class="stat"><div class="v cool" id="h_freed">--</div><div class="k">RAM liberada</div></div>
@@ -220,7 +227,7 @@ details.card[open] summary{margin-bottom:8px}
 
   <!-- ===== [HTML] Log do dia (colapsável) ===== -->
   <details class="card">
-    <summary>Log de hoje</summary>
+    <summary>Log de hoje <span class="hint">· o que o motor fez, em tempo real</span></summary>
     <button class="btn" id="btnLogs" style="padding:2px 8px;font-size:10px;margin-bottom:5px">atualizar</button>
     <div class="logbox" id="logbox">--</div>
   </details>
@@ -360,6 +367,8 @@ async function loadConfig() {
     const el = $('f_' + k);
     if (el.type === 'checkbox') el.checked = !!c[k];
     else el.value = c[k] == null ? '' : c[k];
+    // Explicação oficial de cada campo vem do backend (bloco Comments do schema)
+    if (c.Comments && c.Comments[k]) el.closest('.field').title = c.Comments[k];
   });
 }
 $('btnSaveCfg').onclick = async () => {
