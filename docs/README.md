@@ -15,9 +15,12 @@ Ao contrário de limpar tudo constantemente (prejudicial para o SSD), este siste
 
 ## 📋 Como Usar
 
-### **Iniciar (Central de Controle)**
+### **Iniciar**
 
-Clique direito em **`INICIAR.bat`** → *Executar como administrador*. Ele auto-eleva e abre o menu:
+Duplo clique em **`INICIAR.bat`** → abre o **Painel gráfico (UI)** com tudo: limpeza,
+tarefa em 2º plano, perfis, configurações, logs e histórico (auto-eleva via UAC).
+
+Prefere o menu clássico no console? **`INICIAR.bat cmd`**:
 
 ```
 1 - Analisar sistema e recomendar perfil
@@ -49,7 +52,7 @@ barra de endereço — parece programa nativo). Tudo do script em um lugar só:
 - **Limpeza manual** — os 6 tipos (Safe, SafeStrong, Standby, Working Sets, Modified, All) com o resultado em GB
 - **Perfis** — cards com todos os perfis + análise/recomendação do sistema com 1 clique
 - **Configuração** — formulário de todos os campos do JSON (validado pelo mesmo parser do engine)
-- **Tarefa 2º plano** — iniciar/parar/criar o monitor contínuo
+- **Tarefa 2º plano** — tudo do menu 6: iniciar/parar, criar monitor contínuo ou verificação periódica, status, menu de contexto (instalar/remover), remover auto-execução e "parar tudo"
 - **Logs e resumo** — log de hoje ao vivo + estatísticas dos últimos 7 dias
 
 Como funciona por dentro: `scripts/UI-Server.ps1` sobe um servidor HTTP **apenas em

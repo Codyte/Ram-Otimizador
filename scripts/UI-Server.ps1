@@ -1,12 +1,12 @@
 # ====================== BEGIN NAV INDEX ======================
 # NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
-#   L72    Send-Json
-#   L81    Send-Text
-#   L90    Read-JsonBody
-#   L101   Get-UiStatus
-#   L136   Invoke-UiClean
-#   L160   Set-UiTask
-#   L212   Invoke-UiRoute
+#   L77    Send-Json
+#   L86    Send-Text
+#   L95    Read-JsonBody
+#   L106   Get-UiStatus
+#   L141   Invoke-UiClean
+#   L165   Set-UiTask
+#   L230   Invoke-UiRoute
 # ======================= END NAV INDEX =======================
 
 #
@@ -23,7 +23,8 @@
 #   GET  /api/recommend     -> Get-RecommendedProfile (sob demanda; ~1s de CIM)
 #   POST /api/profile       -> {name} -> Apply-RamProfile
 #   POST /api/clean         -> {action} -> engine -Clean (bloqueia ate terminar; retorna GB liberado)
-#   POST /api/task          -> {op: start|stop|create-monitor|create-periodic, minutes}
+#   POST /api/task          -> {op: start|stop|create-monitor|create-periodic|status|
+#                                    ctx-add|ctx-remove|remove|cleanup-all, minutes}
 #   GET  /api/logs          -> ultimas 50 linhas do log de hoje
 #   GET  /api/history       -> linhas do cleanup-history.csv dos ultimos 7 dias
 #
@@ -55,6 +56,10 @@ if (-not (Test-Admin)) {
 $Engine   = Join-Path $PSScriptRoot "LimparRAM-Inteligente.ps1"
 $HtmlPath = Join-Path $Global:RamRoot "ui\index.html"
 $HbPath   = Join-Path $Global:RamLogDir "monitor-status.json"
+
+# Funcoes do configurador (Add/Remove-ContextMenu, Remove-AutoExec, Invoke-FullCleanup);
+# -Lib pula o menu interativo e os prompts.
+. (Join-Path $PSScriptRoot "Configurar-AutoExecucao.ps1") -Lib
 
 # ---------------------------------------------------------------------------
 # Porta livre (bind 0 e pergunta ao SO) + token de sessao: cada request precisa
@@ -200,10 +205,23 @@ function Set-UiTask {
                 -Settings $settings -Principal $principal `
                 -Description "Limpeza inteligente de RAM (RAMMap) (periodico ${Minutes}min)" -Force -ErrorAction Stop | Out-Null
         }
+        'status'      { }                              # so leitura; detalhes montados abaixo
+        'ctx-add'     { Add-ContextMenu }
+        'ctx-remove'  { Remove-ContextMenu }
+        'remove'      { Remove-AutoExec }
+        'cleanup-all' { Invoke-FullCleanup -Force }
         default { throw "Operacao invalida: $Op" }
     }
     $t = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
-    @{ ok = $true; taskState = $(if ($t) { "$($t.State)" } else { $null }) }
+    $res = @{ ok = $true; taskState = $(if ($t) { "$($t.State)" } else { $null }) }
+    if ($Op -eq 'status' -and $t) {
+        $i = $t | Get-ScheduledTaskInfo
+        $res.description = $t.Description
+        $res.lastRun     = "$($i.LastRunTime)"; $res.lastResult = $i.LastTaskResult
+        $res.nextRun     = "$($i.NextRunTime)"
+    }
+    if ($Op -like 'ctx-*') { $res.ctxInstalled = [bool]($CtxBases | Where-Object { Test-Path $_ }) }
+    $res
 }
 
 # ---------------------------------------------------------------------------

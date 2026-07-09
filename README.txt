@@ -4,10 +4,12 @@
 
 COMO USAR
 --------------------------------------------------------------------------------
-  Clique direito em  INICIAR.bat  ->  "Executar como administrador".
-  Ele auto-eleva e abre a Central de Controle (menu).
+  Duplo clique em  INICIAR.bat  ->  abre o PAINEL GRAFICO (UI), com limpeza,
+  tarefa em 2o plano, perfis, configuracoes, logs e historico (auto-eleva, UAC).
 
-  No menu:
+  Prefere o menu classico no console?   INICIAR.bat cmd
+
+  No menu (INICIAR.bat cmd):
     1  Analisar sistema e recomendar perfil
     2  Escolher perfil pre-pronto (games, servidor 24/7, ...)
     3  Iniciar MONITOR continuo (primeiro plano)

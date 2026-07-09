@@ -81,6 +81,7 @@ details.card[open] summary{margin-bottom:8px}
 .act{display:flex;align-items:center;gap:9px}
 .act .btn{min-width:100px;text-align:center;flex-shrink:0}
 .act span{font-size:10.5px;color:var(--muted);line-height:1.3}
+.act input[type=number]{width:46px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;color:inherit;font-size:10.5px;padding:1px 3px}
 .cardnote{font-size:10.5px;color:var(--muted);margin:-4px 0 8px;line-height:1.35}
 summary .hint{letter-spacing:0;text-transform:none;font-size:10px;color:var(--muted);opacity:.75}
 .actions{display:flex;flex-wrap:wrap;gap:6px}
@@ -174,7 +175,13 @@ summary .hint{letter-spacing:0;text-transform:none;font-size:10px;color:var(--mu
     <div class="acts">
       <div class="act"><button class="btn" data-task="start">Iniciar</button><span>Liga a tarefa já criada</span></div>
       <div class="act"><button class="btn" data-task="stop">Parar</button><span>Para o monitor em 2º plano</span></div>
-      <div class="act"><button class="btn" data-task="create-monitor">Criar monitor contínuo</button><span>Cria/recria a tarefa: inicia no boot, roda oculta (SYSTEM)</span></div>
+      <div class="act"><button class="btn" data-task="create-monitor">Criar monitor contínuo</button><span>Cria/recria a tarefa: inicia no boot, roda oculta (SYSTEM) — recomendado p/ desktop/games</span></div>
+      <div class="act"><button class="btn" data-task="create-periodic">Criar verificação periódica</button><span>Cria/recria a tarefa: checa e limpa a cada <input id="perMin" type="number" min="1" max="1440" value="5"> min, depois encerra — bom p/ servidor</span></div>
+      <div class="act"><button class="btn" data-task="status">Ver status</button><span>Estado, última e próxima execução da tarefa</span></div>
+      <div class="act"><button class="btn" data-task="ctx-add">Instalar menu de contexto</button><span>Botão direito na área de trabalho/pasta → Ram-Otimizador (Painel + limpezas 1-5)</span></div>
+      <div class="act"><button class="btn" data-task="ctx-remove">Remover menu de contexto</button><span>Tira as entradas do botão direito</span></div>
+      <div class="act"><button class="btn danger" data-task="remove">Remover auto-execução</button><span>Apaga só o agendamento (config e logs ficam)</span></div>
+      <div class="act"><button class="btn danger" data-task="cleanup-all">Parar tudo e limpar resíduos</button><span>Mata monitores, remove agendamentos, entradas de boot e menu de contexto</span></div>
     </div>
     <div class="result" id="taskResult"></div>
   </section>
@@ -317,12 +324,27 @@ document.querySelectorAll('[data-clean]').forEach(b => b.onclick = async () => {
 });
 
 /* ===== [JS] Tarefa 2º plano ===== */
+const taskConfirm = {
+  'remove':      'Remover a auto-execução (agendamento)?',
+  'cleanup-all': 'Parar TUDO: mata monitores, remove agendamentos, entradas de boot e menu de contexto. Config e logs ficam. Continuar?'
+};
 document.querySelectorAll('[data-task]').forEach(b => b.onclick = async () => {
-  const out = $('taskResult');
+  const op = b.dataset.task, out = $('taskResult');
+  if (taskConfirm[op] && !confirm(taskConfirm[op])) return;
   out.className = 'result'; out.textContent = '…';
   try {
-    const r = await api('/api/task', { op: b.dataset.task });
-    out.textContent = '✓ tarefa: ' + (r.taskState || 'não criada').toLowerCase();
+    const body = { op };
+    if (op === 'create-periodic') body.minutes = parseInt($('perMin').value, 10) || 5;
+    const r = await api('/api/task', body);
+    if (op === 'status') {
+      out.textContent = r.taskState
+        ? `✓ ${r.taskState.toLowerCase()} · última: ${r.lastRun} (código ${r.lastResult}) · próxima: ${r.nextRun}`
+        : '✓ tarefa não criada';
+    } else if (op === 'ctx-add' || op === 'ctx-remove') {
+      out.textContent = '✓ menu de contexto ' + (r.ctxInstalled ? 'instalado' : 'removido');
+    } else {
+      out.textContent = '✓ tarefa: ' + (r.taskState || 'não criada').toLowerCase();
+    }
   } catch (e) { out.className = 'result err'; out.textContent = '✗ ' + e.message; }
   poll();
 });

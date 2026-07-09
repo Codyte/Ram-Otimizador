@@ -80,9 +80,10 @@ git clone https://github.com/Codyte/Ram-Otimizador.git
 cd Ram-Otimizador
 ```
 
-### 2. Executar como Admin
+### 2. Executar
 ```
-Clique direito em INICIAR.bat → Executar como administrador
+Duplo clique em INICIAR.bat → abre o Painel gráfico (UI), com tudo (auto-eleva via UAC)
+Prefere o menu clássico no console? INICIAR.bat cmd
 ```
 
 ### 3. Escolher Perfil

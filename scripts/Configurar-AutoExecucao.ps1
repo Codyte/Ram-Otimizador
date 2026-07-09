@@ -1,23 +1,25 @@
 # ====================== BEGIN NAV INDEX ======================
 # NAV INDEX — auto-generated symbol map (refresh via the navindex skill)
-#   L30    Resolve-ScheduledPowerShell
-#   L40    Test-TaskRunsThisEngine
-#   L49    Remove-ExistingTask
-#   L58    Confirm-SystemRAMMapEula
-#   L71    New-MonitorTask
-#   L106   New-PeriodicTask
-#   L153   Add-ContextMenu
-#   L183   Remove-ContextMenu
-#   L193   Remove-AutoExec
-#   L205   Get-MonitorProcesses
-#   L214   Invoke-FullCleanup
-#   L278   Show-TaskStatus
+#   L32    Resolve-ScheduledPowerShell
+#   L42    Test-TaskRunsThisEngine
+#   L51    Remove-ExistingTask
+#   L60    Confirm-SystemRAMMapEula
+#   L73    New-MonitorTask
+#   L108   New-PeriodicTask
+#   L155   Add-ContextMenu
+#   L185   Remove-ContextMenu
+#   L195   Remove-AutoExec
+#   L207   Get-MonitorProcesses
+#   L216   Invoke-FullCleanup
+#   L281   Show-TaskStatus
 # ======================= END NAV INDEX =======================
+
+param([switch]$Lib)   # -Lib: so define funcoes/vars (dot-source pelo UI-Server), sem menu nem prompts
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 . (Join-Path $ScriptDir "RamCommon.ps1")
 
-if (-not (Test-Admin)) {   # Test-Admin vem do RamCommon
+if (-not $Lib -and -not (Test-Admin)) {   # Test-Admin vem do RamCommon
     Write-Host "[ERRO] Requer Administrador. Abra pelo INICIAR.bat (elevado)." -ForegroundColor Red
     Read-Host "Enter para fechar"; exit 1
 }
@@ -212,10 +214,11 @@ function Get-MonitorProcesses {
 }
 
 function Invoke-FullCleanup {
+    param([switch]$Force)   # -Force: sem prompt (UI ja confirmou no browser)
     Write-Host "`n[LIMPEZA TOTAL DO SCRIPT]" -ForegroundColor Cyan
     Write-Host "Vai matar monitores em 2o plano, remover TODOS os agendamentos e limpar residuos." -ForegroundColor Gray
     Write-Host "Config e logs sao mantidos." -ForegroundColor DarkGray
-    if ((Read-Host "Confirmar? (S/N)") -notmatch '^[sS]') { Write-Host "Cancelado." -ForegroundColor Yellow; return }
+    if (-not $Force -and (Read-Host "Confirmar? (S/N)") -notmatch '^[sS]') { Write-Host "Cancelado." -ForegroundColor Yellow; return }
 
     # 1) Remover agendamentos PRIMEIRO (a nomeada + qualquer tarefa que rode o engine),
     #    p/ nao relancar um monitor entre o kill e a remocao.
@@ -287,6 +290,8 @@ function Show-TaskStatus {
 }
 
 # ---------------------------------------------------------------------------
+if ($Lib) { return }   # dot-source: para aqui, menu e so p/ uso interativo
+
 Write-Host "=== CONFIGURADOR DE AUTO-EXECUCAO ===" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  1 - Monitor continuo no boot (RECOMENDADO p/ desktop/games)" -ForegroundColor Yellow
