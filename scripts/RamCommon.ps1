@@ -527,22 +527,22 @@ function Get-RamProfiles {
     # ThresholdCleanGB opcional ($null = usar so o %; ex: 10.5 ou "10.5gb").
     [ordered]@{
         equilibrado = [ordered]@{
-            Description          = "Uso geral de desktop. TUDO ao atingir o limite (com guarda anti-stutter)."
-            ThresholdClean = 82; ThresholdCleanGB = $null; CleanAction = "All"
+            Description          = "Uso geral de desktop. Safe (maior liberacao real, preserva o cache de disco)."
+            ThresholdClean = 82; ThresholdCleanGB = $null; CleanAction = "Safe"
             CheckIntervalSeconds = 30; CleanCooldownSeconds = 120; StepDelayMs = 400
             HysteresisPercent = 3; MinStandbyMB = 1024
             LogLevel = "INFO"; EnableGameDetection = $true; RestartOnError = $true
         }
         games = [ordered]@{
-            Description          = "Jogos. SafeStrong (Modified+Standby) p/ liberar RAM sem stutter no jogo."
-            ThresholdClean = 80; ThresholdCleanGB = $null; CleanAction = "SafeStrong"
+            Description          = "Jogos. Safe; com jogo aberto a guarda rebaixa sozinha p/ SafeStrong (sem stutter)."
+            ThresholdClean = 80; ThresholdCleanGB = $null; CleanAction = "Safe"
             CheckIntervalSeconds = 15; CleanCooldownSeconds = 60; StepDelayMs = 400
             HysteresisPercent = 4; MinStandbyMB = 512
             LogLevel = "INFO"; EnableGameDetection = $true; RestartOnError = $true
         }
         "servidor-24-7" = [ordered]@{
-            Description          = "Servidor 24/7. SafeStrong, limite alto e cooldown longo (sem picos de latencia)."
-            ThresholdClean = 90; ThresholdCleanGB = $null; CleanAction = "SafeStrong"
+            Description          = "Servidor 24/7. Safe (libera de verdade e nao purga o cache de disco), limite alto e cooldown longo."
+            ThresholdClean = 90; ThresholdCleanGB = $null; CleanAction = "Safe"
             CheckIntervalSeconds = 60; CleanCooldownSeconds = 300; StepDelayMs = 500
             HysteresisPercent = 2; MinStandbyMB = 2048
             LogLevel = "WARNING"; EnableGameDetection = $false; RestartOnError = $true
@@ -555,15 +555,15 @@ function Get-RamProfiles {
             LogLevel = "INFO"; EnableGameDetection = $true; RestartOnError = $true
         }
         "low-ram" = [ordered]@{
-            Description          = "Maquinas com pouca RAM (<=8GB). TUDO, agressivo p/ manter responsividade."
-            ThresholdClean = 72; ThresholdCleanGB = $null; CleanAction = "All"
+            Description          = "Maquinas com pouca RAM (<=8GB). Safe agressivo (purgar o pouco cache que ha so pioraria)."
+            ThresholdClean = 72; ThresholdCleanGB = $null; CleanAction = "Safe"
             CheckIntervalSeconds = 20; CleanCooldownSeconds = 90; StepDelayMs = 300
             HysteresisPercent = 4; MinStandbyMB = 512
             LogLevel = "INFO"; EnableGameDetection = $true; RestartOnError = $true
         }
         "economia-bateria" = [ordered]@{
-            Description          = "Notebook na bateria. So Standby, limite alto e cooldown enorme (poupa energia)."
-            ThresholdClean = 90; ThresholdCleanGB = $null; CleanAction = "Standby"
+            Description          = "Notebook na bateria. Safe raro (maximo efeito por ciclo; purgar cache gastaria disco/energia)."
+            ThresholdClean = 90; ThresholdCleanGB = $null; CleanAction = "Safe"
             CheckIntervalSeconds = 120; CleanCooldownSeconds = 600; StepDelayMs = 0
             HysteresisPercent = 2; MinStandbyMB = 1536
             LogLevel = "WARNING"; EnableGameDetection = $false; RestartOnError = $true

@@ -143,22 +143,23 @@ Quando **os dois** estão definidos, combinam por **OU**: dispara assim que
 
 #### PC com pouca RAM (≤8GB):
 ```json
-{ "ThresholdClean": 72, "CleanAction": "All", "CheckIntervalSeconds": 20 }
+{ "ThresholdClean": 72, "CleanAction": "Safe", "CheckIntervalSeconds": 20 }
 ```
 
 #### PC com 16GB+ (uso normal):
 ```json
-{ "ThresholdClean": 82, "CleanAction": "All", "CheckIntervalSeconds": 30 }
+{ "ThresholdClean": 82, "CleanAction": "Safe", "CheckIntervalSeconds": 30 }
 ```
 
 #### Gaming intenso (Rust, Warzone, etc):
 ```json
-{ "ThresholdClean": 80, "CleanAction": "SafeStrong", "CheckIntervalSeconds": 15, "EnableGameDetection": true }
+{ "ThresholdClean": 80, "CleanAction": "Safe", "CheckIntervalSeconds": 15, "EnableGameDetection": true }
 ```
+> Com jogo aberto a guarda anti-stutter rebaixa `Safe`→`SafeStrong` sozinha; fora do jogo libera de verdade.
 
 #### Servidor 24/7:
 ```json
-{ "ThresholdClean": 90, "CleanAction": "SafeStrong", "CheckIntervalSeconds": 60, "CleanCooldownSeconds": 300 }
+{ "ThresholdClean": 90, "CleanAction": "Safe", "CheckIntervalSeconds": 60, "CleanCooldownSeconds": 300 }
 ```
 
 ---

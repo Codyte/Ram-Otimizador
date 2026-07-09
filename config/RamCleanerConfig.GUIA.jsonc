@@ -99,19 +99,19 @@
 // ============================================================================
 //
 //  PC uso normal (16GB+):
-//    { "ThresholdClean": 82, "CleanAction": "All",        "CheckIntervalSeconds": 30 }
+//    { "ThresholdClean": 82, "CleanAction": "Safe",       "CheckIntervalSeconds": 30 }
 //
 //  Pouca RAM (<=8GB):
-//    { "ThresholdClean": 72, "CleanAction": "All",        "CheckIntervalSeconds": 20 }
+//    { "ThresholdClean": 72, "CleanAction": "Safe",       "CheckIntervalSeconds": 20 }
 //
-//  Jogo:
-//    { "ThresholdClean": 80, "CleanAction": "SafeStrong", "CheckIntervalSeconds": 15 }
+//  Jogo (com jogo aberto a guarda rebaixa Safe -> SafeStrong sozinha):
+//    { "ThresholdClean": 80, "CleanAction": "Safe",       "CheckIntervalSeconds": 15 }
 //
 //  Servidor 24/7:
-//    { "ThresholdClean": 90, "CleanAction": "SafeStrong", "CleanCooldownSeconds": 300 }
+//    { "ThresholdClean": 90, "CleanAction": "Safe",       "CleanCooldownSeconds": 300 }
 //
 //  Notebook na bateria:
-//    { "ThresholdClean": 90, "CleanAction": "Standby",    "CleanCooldownSeconds": 600 }
+//    { "ThresholdClean": 90, "CleanAction": "Safe",       "CleanCooldownSeconds": 600 }
 //
 //  Limite em GB (PC de 32GB) - limpar ao passar de 10.5GB usados:
 //    { "ThresholdClean": null, "ThresholdCleanGB": "10.5gb", "CleanAction": "All" }
