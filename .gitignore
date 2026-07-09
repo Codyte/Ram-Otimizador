@@ -8,3 +8,4 @@ config/*.bad-*.json
 .navindex-cache.json
 config/RamCleanerConfig.json
 config/RamCleanerConfig.json
+config/RamCleanerConfig.json

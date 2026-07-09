@@ -1,7 +1,7 @@
 ﻿{
     "Profile":  "personalizado",
     "ThresholdClean":  null,
-    "ThresholdCleanGB":  "8",
+    "ThresholdCleanGB":  "10",
     "CleanAction":  "Safe",
     "StepDelayMs":  5000,
     "CheckIntervalSeconds":  20,
