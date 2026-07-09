@@ -35,19 +35,23 @@
   // -------------------------------------------------------------------------
   // ACAO (o que limpar quando o limite e atingido)
   // -------------------------------------------------------------------------
-  "CleanAction": "All",            // "All"        = TUDO: Working Sets -> Modified -> Standby
+  "CleanAction": "Safe",           // "Safe"       = Working Sets -> Modified (PADRAO). Maior
+                                   //                liberacao real no dia a dia: apara os Working
+                                   //                Sets (paginas quentes voltam por page fault,
+                                   //                custo momentaneo; as frias nem voltam) e
+                                   //                descarrega as sujas p/ o disco. Tambem ideal
+                                   //                antes de desligar.
+                                   // "All"        = TUDO: Working Sets -> Modified -> Standby
                                    //                (nesta ordem: o trim dos Working Sets empurra
                                    //                paginas sujas p/ a Modified, o flush da
                                    //                Modified as manda p/ a Standby, e a purga da
-                                   //                Standby libera tudo). Libera o maximo, MAS
-                                   //                Working Sets pode causar engasgo em jogo /
-                                   //                pico de latencia em servidor.
-                                   // "Safe"       = Working Sets -> Modified (1 -> 2), SEM
-                                   //                purgar a Standby. Ideal antes de desligar:
-                                   //                descarrega as paginas sujas p/ o disco.
+                                   //                Standby libera tudo). Bom antes de trocar de
+                                   //                tarefa pesada (fechar jogo -> abrir editor).
                                    // "SafeStrong" = Modified + Standby (SEM Working Sets).
                                    //                Forte e sem stutter. Ideal p/ jogo,
-                                   //                servidor e maquina de criacao.
+                                   //                servidor e maquina de criacao. Com jogo/app
+                                   //                pesado aberto, Safe e All viram SafeStrong
+                                   //                sozinhos (EnableGameDetection).
                                    // "Standby"    = so a Standby List. Mais leve.
 
   "CleanEngine": "Auto",           // Motor que executa a limpeza:

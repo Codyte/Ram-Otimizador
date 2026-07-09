@@ -29,17 +29,17 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{background:var(--bg);color:var(--text);font:14px/1.5 var(--sans);padding:20px 22px 28px}
+body{background:var(--bg);color:var(--text);font:13px/1.45 var(--sans);padding:12px 14px 16px}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:none}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cool);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 
 /* ===== [CSS] Cabeçalho ===== */
-header{display:flex;align-items:baseline;gap:14px;margin-bottom:16px;flex-wrap:wrap}
-header h1{font-size:17px;font-weight:600;letter-spacing:.02em}
+header{display:flex;align-items:baseline;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+header h1{font-size:14px;font-weight:600;letter-spacing:.02em}
 header h1 b{color:var(--cool);font-weight:600}
 .pills{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
-.pill{font:11px/1 var(--mono);letter-spacing:.06em;padding:6px 10px;border-radius:20px;
+.pill{font:10px/1 var(--mono);letter-spacing:.05em;padding:4px 8px;border-radius:20px;
   border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;gap:6px}
 .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
 .pill.on{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
@@ -47,65 +47,70 @@ header h1 b{color:var(--cool);font-weight:600}
 .pill.warn{color:var(--heat)} .pill.warn .dot{background:var(--heat)}
 
 /* ===== [CSS] Hero: gauge de células ===== */
-.hero{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px 16px;margin-bottom:14px}
-.hero-top{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:12px}
-.big{font:600 34px/1 var(--mono);font-variant-numeric:tabular-nums}
-.big small{font-size:15px;color:var(--muted);font-weight:400}
-.hero-stats{display:flex;gap:22px;margin-left:auto;flex-wrap:wrap}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px 9px;margin-bottom:9px}
+.hero-top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.big{font:600 24px/1 var(--mono);font-variant-numeric:tabular-nums}
+.big small{font-size:12px;color:var(--muted);font-weight:400}
+.hero-stats{display:flex;gap:16px;margin-left:auto;flex-wrap:wrap}
 .stat{text-align:right}
-.stat .v{font:500 16px/1.2 var(--mono);font-variant-numeric:tabular-nums}
-.stat .k{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.stat .v{font:500 13.5px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.stat .k{font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .stat .v.cool{color:var(--cool)} .stat .v.heat{color:var(--heat)}
 /* pente de memória: células preenchidas por pressão */
-#stick{display:grid;grid-template-columns:repeat(60,1fr);gap:3px;height:34px}
+#stick{display:grid;grid-template-columns:repeat(60,1fr);gap:2px;height:20px}
 #stick i{border-radius:2px;background:var(--panel2);border:1px solid var(--line);transition:background .4s,border-color .4s}
 #stick i.u{border-color:transparent}
 #stick i.sb{background:repeating-linear-gradient(45deg,transparent,transparent 2px,color-mix(in srgb,var(--cool) 45%,transparent) 2px,color-mix(in srgb,var(--cool) 45%,transparent) 4px);border-color:color-mix(in srgb,var(--cool) 30%,transparent)}
-.legend{display:flex;gap:16px;margin-top:9px;font-size:11px;color:var(--muted)}
+.legend{display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--muted)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
 /* ===== [CSS] Grid de cards ===== */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media (max-width:760px){.grid{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media (max-width:700px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
 .card.full{grid-column:1/-1}
-.card h2{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.card h2{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+/* seções secundárias colapsam (details nativo); resumo = mesmo visual do h2 */
+details.card summary{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;user-select:none;list-style:none}
+details.card summary::before{content:"▸ "}
+details.card[open] summary::before{content:"▾ "}
+details.card[open] summary{margin-bottom:8px}
 
 /* ===== [CSS] Botões de ação ===== */
-.actions{display:flex;flex-wrap:wrap;gap:8px}
-.btn{border:1px solid var(--line);background:var(--panel2);border-radius:7px;padding:9px 13px;font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+.btn{border:1px solid var(--line);background:var(--panel2);border-radius:6px;padding:6px 10px;font-size:12px}
 .btn:hover{border-color:var(--cool)}
 .btn[disabled]{opacity:.45;cursor:wait}
 .btn.primary{border-color:color-mix(in srgb,var(--cool) 55%,transparent);color:var(--cool)}
 .btn.danger:hover{border-color:var(--hot);color:var(--hot)}
-.result{margin-top:10px;font:12.5px var(--mono);color:var(--ok);min-height:18px}
+.result{margin-top:7px;font:11.5px var(--mono);color:var(--ok);min-height:16px}
 .result.err{color:var(--hot)}
 
 /* ===== [CSS] Perfis ===== */
-.profiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:9px}
-.prof{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:11px 12px;text-align:left;display:block;width:100%}
+.profiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:7px}
+.prof{border:1px solid var(--line);background:var(--panel2);border-radius:7px;padding:8px 10px;text-align:left;display:block;width:100%}
 .prof:hover{border-color:var(--cool)}
 .prof.active{border-color:var(--ok)}
 .prof .n,.prof .d,.prof .m{display:block}
 .prof .n{font-weight:600;font-size:13px;display:flex;gap:6px;align-items:center}
 .prof.active .n::after{content:"ativo";font:10px var(--mono);color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 40%,transparent);padding:1px 6px;border-radius:10px}
-.prof .d{font-size:11.5px;color:var(--muted);margin:4px 0 6px;min-height:32px}
+.prof .d{font-size:10.5px;color:var(--muted);margin:3px 0 4px}
 .prof .m{font:11px var(--mono);color:var(--muted)}
 #recBox{margin-top:11px;font-size:12.5px;color:var(--muted)}
 #recBox b{color:var(--cool)}
 
 /* ===== [CSS] Config ===== */
-.cfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:11px 14px}
-.field label{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
-.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:6px;
-  color:var(--text);font:13px var(--mono);padding:7px 9px}
+.cfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:7px 10px}
+.field label{display:block;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:5px;
+  color:var(--text);font:12px var(--mono);padding:5px 7px}
 .field input[type=checkbox]{width:auto;accent-color:var(--cool)}
-.cfg-foot{display:flex;align-items:center;gap:12px;margin-top:14px}
+.cfg-foot{display:flex;align-items:center;gap:10px;margin-top:9px}
 
 /* ===== [CSS] Logs / histórico ===== */
-.logbox{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:10px 12px;
-  font:11.5px/1.65 var(--mono);color:var(--muted);max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-all}
-.hist{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:10px}
+.logbox{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 9px;
+  font:10.5px/1.55 var(--mono);color:var(--muted);max-height:170px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.hist{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:7px}
 .hist .stat{text-align:left}
 </style>
 </head>
@@ -146,12 +151,12 @@ header h1 b{color:var(--cool);font-weight:600}
   <section class="card">
     <h2>Limpeza manual</h2>
     <div class="actions">
-      <button class="btn primary" data-clean="Safe" title="Working Sets → Modified; ideal antes de desligar">Safe</button>
-      <button class="btn primary" data-clean="SafeStrong" title="Modified + Standby; forte, sem stutter">SafeStrong</button>
+      <button class="btn primary" data-clean="Safe" title="Working Sets → Modified; padrão do dia a dia (maior liberação)">Safe</button>
+      <button class="btn" data-clean="All" title="TUDO: Working Sets → Modified → Standby; bom antes de trocar de tarefa pesada">All</button>
+      <button class="btn" data-clean="SafeStrong" title="Modified + Standby; não toca apps abertos (auto durante jogo)">SafeStrong</button>
       <button class="btn" data-clean="Standby" title="Só a Standby List">Standby</button>
       <button class="btn" data-clean="WorkingSets" title="Só Working Sets">Working Sets</button>
       <button class="btn" data-clean="ModifiedPageList" title="Só Modified Page List">Modified</button>
-      <button class="btn danger" data-clean="All" title="TUDO: Working Sets → Modified → Standby">All</button>
     </div>
     <div class="result" id="cleanResult"></div>
   </section>
@@ -167,21 +172,21 @@ header h1 b{color:var(--cool);font-weight:600}
     <div class="result" id="taskResult"></div>
   </section>
 
-  <!-- ===== [HTML] Perfis ===== -->
-  <section class="card full">
-    <h2>Perfis</h2>
+  <!-- ===== [HTML] Perfis (colapsável) ===== -->
+  <details class="card full">
+    <summary>Perfis</summary>
     <div class="profiles" id="profiles"></div>
     <div id="recBox"><button class="btn" id="btnRec">Analisar sistema e recomendar perfil</button></div>
-  </section>
+  </details>
 
-  <!-- ===== [HTML] Configuração ===== -->
-  <section class="card full">
-    <h2>Configuração</h2>
+  <!-- ===== [HTML] Configuração (colapsável) ===== -->
+  <details class="card full">
+    <summary>Configuração</summary>
     <div class="cfg" id="cfgForm">
       <div class="field"><label for="f_ThresholdClean">Limite (%)</label><input id="f_ThresholdClean"></div>
       <div class="field"><label for="f_ThresholdCleanGB">Limite (GB, opcional)</label><input id="f_ThresholdCleanGB" placeholder="vazio = só %"></div>
       <div class="field"><label for="f_CleanAction">Ação ao atingir</label>
-        <select id="f_CleanAction"><option>All</option><option>Safe</option><option>SafeStrong</option><option>Standby</option><option>WorkingSets</option><option>ModifiedPageList</option></select></div>
+        <select id="f_CleanAction"><option>Safe</option><option>All</option><option>SafeStrong</option><option>Standby</option><option>WorkingSets</option><option>ModifiedPageList</option></select></div>
       <div class="field"><label for="f_CleanEngine">Motor</label>
         <select id="f_CleanEngine"><option>Auto</option><option>Native</option><option>RAMMap</option></select></div>
       <div class="field"><label for="f_CheckIntervalSeconds">Intervalo de checagem (s)</label><input id="f_CheckIntervalSeconds" type="number" min="1"></div>
@@ -200,25 +205,25 @@ header h1 b{color:var(--cool);font-weight:600}
       <button class="btn primary" id="btnSaveCfg">Salvar configuração</button>
       <span class="result" id="cfgResult" style="margin:0"></span>
     </div>
-  </section>
+  </details>
 
-  <!-- ===== [HTML] Histórico + top processos ===== -->
-  <section class="card">
-    <h2>Últimos 7 dias</h2>
+  <!-- ===== [HTML] Histórico + top processos (colapsável) ===== -->
+  <details class="card">
+    <summary>Últimos 7 dias · Top processos</summary>
     <div class="hist">
       <div class="stat"><div class="v" id="h_count">--</div><div class="k">limpezas</div></div>
       <div class="stat"><div class="v cool" id="h_freed">--</div><div class="k">RAM liberada</div></div>
       <div class="stat"><div class="v heat" id="h_peak">--</div><div class="k">pico de uso</div></div>
     </div>
-    <h2 style="margin-top:6px">Top 5 processos</h2>
-    <div class="logbox" id="topProcs" style="max-height:130px">--</div>
-  </section>
+    <div class="logbox" id="topProcs" style="max-height:110px">--</div>
+  </details>
 
-  <!-- ===== [HTML] Log do dia ===== -->
-  <section class="card">
-    <h2>Log de hoje <button class="btn" id="btnLogs" style="padding:3px 9px;font-size:11px;float:right">atualizar</button></h2>
+  <!-- ===== [HTML] Log do dia (colapsável) ===== -->
+  <details class="card">
+    <summary>Log de hoje</summary>
+    <button class="btn" id="btnLogs" style="padding:2px 8px;font-size:10px;margin-bottom:5px">atualizar</button>
     <div class="logbox" id="logbox">--</div>
-  </section>
+  </details>
 
 </div>
 

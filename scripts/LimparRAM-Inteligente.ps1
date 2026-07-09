@@ -10,11 +10,11 @@
 #   L274   Write-Heartbeat
 #   L308   Write-CycleLog
 #   L318   Test-MemoryAndClean
-#   L402   Wait-MonitorInterval
-#   L421   Start-RAMMonitor
-#   L495   Assert-Admin
-#   L506   Show-Status
-#   L538   Sem params: este script e o motor, nao a interface -------------------
+#   L403   Wait-MonitorInterval
+#   L422   Start-RAMMonitor
+#   L496   Assert-Admin
+#   L507   Show-Status
+#   L539   Sem params: este script e o motor, nao a interface -------------------
 # ======================= END NAV INDEX =======================
 
 [CmdletBinding(DefaultParameterSetName = 'Menu')]
@@ -365,8 +365,9 @@ function Test-MemoryAndClean {
     if ([string]::IsNullOrWhiteSpace($Action)) { $Action = "All" }
 
     # Guarda anti-stutter: se um app pesado/jogo estiver aberto, evita esvaziar
-    # Working Sets (TUDO -> SafeStrong), poupando o jogo/servidor de engasgo.
-    if ($Config.EnableGameDetection -and $Action -eq "All") {
+    # Working Sets (All/Safe -> SafeStrong), poupando o jogo/servidor de engasgo.
+    # Safe entra na guarda porque tambem apara Working Sets (default do dia a dia).
+    if ($Config.EnableGameDetection -and $Action -in @("All", "Safe")) {
         $HeavyApps = @(Get-HeavyProcesses)
         if ($HeavyApps.Count -gt 0) {
             $names = ($HeavyApps | Select-Object -First 3 -ExpandProperty ProcessName) -join ", "

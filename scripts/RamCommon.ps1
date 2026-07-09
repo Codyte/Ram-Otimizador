@@ -218,7 +218,7 @@ function Get-RamConfigSchema {
         # Modelo simples: UM limite dispara UMA acao. Limite hibrido %/GB de RAM USADA.
         ThresholdClean       = 80       # % de RAM USADA que dispara (ou "80%")
         ThresholdCleanGB     = $null    # idem em GB (ou "10.5gb"); combina com % por OR
-        CleanAction          = "All"    # All (TUDO) | SafeStrong (Modified+Standby) | Standby
+        CleanAction          = "Safe"   # Safe (dia a dia) | All (max) | SafeStrong (sem WS) | Standby
         CleanEngine          = "Auto"   # Auto (nativo se disponivel) | Native | RAMMap
         StepDelayMs          = 400      # delay entre passos de limpeza multi-etapa (ms)
         CheckIntervalSeconds = 30
@@ -241,7 +241,7 @@ function Get-RamConfigComments {
         Profile              = "Perfil ativo. Troque pelo menu (opcao 2); nao edite a mao."
         ThresholdClean       = "Limite de RAM USADA que dispara a limpeza. Numero = % (ex: 80) ou texto (ex: '80%')."
         ThresholdCleanGB     = "Mesmo limite em GB de RAM USADA (ex: 10.5 ou '10.5gb'). null = usar so o %. Se os dois existirem, dispara no que vier primeiro (OU)."
-        CleanAction          = "Acao ao atingir o limite: All = TUDO (WorkingSets -> Modified -> Standby); Safe = WorkingSets -> Modified (sem purgar standby; bom pre-desligamento); SafeStrong = Modified+Standby (forte, sem stutter); Standby = so Standby (leve)."
+        CleanAction          = "Acao ao atingir o limite: Safe = WorkingSets -> Modified (padrao; maior liberacao no dia a dia); All = TUDO (WorkingSets -> Modified -> Standby; bom antes de trocar de tarefa pesada); SafeStrong = Modified+Standby (nao toca apps abertos; usado automaticamente com jogo aberto); Standby = so Standby (leve). Com jogo/app pesado aberto, Safe e All viram SafeStrong sozinhos (EnableGameDetection)."
         CleanEngine          = "Motor de limpeza: Auto = API nativa do Windows se disponivel, senao RAMMap; Native = so API nativa; RAMMap = so o exe da Sysinternals."
         StepDelayMs          = "Delay em ms entre os passos de uma limpeza de varias etapas (deixa as paginas migrarem). 0 = sem delay."
         CheckIntervalSeconds = "Segundos entre cada verificacao de memoria."

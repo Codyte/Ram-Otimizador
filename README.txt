@@ -38,11 +38,12 @@ COMO USAR
 COMO FUNCIONA (resumo)
 --------------------------------------------------------------------------------
   UM limite de RAM USADA (em % e/ou GB) dispara UMA acao de limpeza:
-    All        = tudo (Working Sets -> Modified -> Standby, nesta ordem)
-    Safe       = Working Sets -> Modified, sem purgar Standby (pre-desligamento)
-    SafeStrong = Modified + Standby (forte, sem stutter) - jogo/servidor
+    Safe       = Working Sets -> Modified (PADRAO; maior liberacao no dia a dia)
+    All        = tudo (Working Sets -> Modified -> Standby) - antes de trocar
+                 de tarefa pesada (fechar jogo -> abrir editor)
+    SafeStrong = Modified + Standby (nao toca apps abertos; sem stutter)
     Standby    = so a Standby List (leve)
-  Com app pesado/jogo aberto, "All" e rebaixado p/ "SafeStrong" automaticamente.
+  Com app pesado/jogo aberto, Safe/All viram "SafeStrong" automaticamente.
 
 ESTRUTURA
 --------------------------------------------------------------------------------

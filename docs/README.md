@@ -90,7 +90,7 @@ Modelo simples: **UM limite dispara UMA ação**. Edite `RamCleanerConfig.json`:
 {
   "ThresholdClean": 80,         // % de RAM USADA que dispara a limpeza (ou "80%")
   "ThresholdCleanGB": null,     // idem em GB (ex: 10.5 ou "10.5gb"); combina com % por OU
-  "CleanAction": "All",         // All (TUDO) | SafeStrong (Modified+Standby) | Standby
+  "CleanAction": "Safe",        // Safe (padrao, dia a dia) | All (max) | SafeStrong | Standby
   "CleanEngine": "Auto",        // Auto (nativo se disponivel) | Native | RAMMap
   "StepDelayMs": 400,           // delay entre os passos de uma limpeza multi-etapa (ms)
   "CheckIntervalSeconds": 30,   // Verifica a cada 30 segundos
@@ -98,7 +98,7 @@ Modelo simples: **UM limite dispara UMA ação**. Edite `RamCleanerConfig.json`:
   "Enabled": true,              // Ativar/desativar
   "LogLevel": "INFO",           // DEBUG, INFO, WARNING
   "LogRetentionDays": 30,       // Apaga logs diarios com mais de N dias
-  "EnableGameDetection": true,  // App pesado aberto => TUDO vira SafeStrong (evita stutter)
+  "EnableGameDetection": true,  // App pesado aberto => Safe/All viram SafeStrong (evita stutter)
   "RestartOnError": true        // Reiniciar se errar
 }
 ```
@@ -107,9 +107,9 @@ Modelo simples: **UM limite dispara UMA ação**. Edite `RamCleanerConfig.json`:
 
 | Ação | Passos | Quando usar | Impacto |
 |------|--------|-------------|---------|
-| `All` (TUDO) | Working Sets → System WS → Modified → Standby | Desktop normal, low-RAM, agressivo | Libera mais, mas Working Sets pode causar **engasgo** em jogo / **pico de latência** em servidor |
-| `Safe` | Working Sets → Modified | **Antes de desligar** | Descarrega as páginas sujas pro disco (1 → 2) sem purgar a Standby — a purga é inútil antes de shutdown |
-| `SafeStrong` | Modified → Standby | **Jogo, servidor, criação** | Forte **sem stutter** (não toca nos Working Sets) |
+| `Safe` (padrão) | Working Sets → Modified | **Dia a dia** — maior liberação real; também ideal antes de desligar | Apara Working Sets: páginas quentes voltam por page fault (custo momentâneo; páginas frias nem voltam) |
+| `All` (TUDO) | Working Sets → System WS → Modified → Standby | **Antes de trocar de tarefa pesada** (fechar jogo → abrir editor), low-RAM | Libera o máximo, incluindo o cache Standby |
+| `SafeStrong` | Modified → Standby | **Jogo, servidor, criação** | Forte **sem stutter** (não toca nos Working Sets) — usado automaticamente pela guarda anti-stutter |
 | `Standby` | Standby | Bateria, uso leve | Mínimo, só cache |
 
 > Os passos rodam **em ordem** (Working Sets → Modified → Standby) com um pequeno
@@ -119,8 +119,9 @@ Modelo simples: **UM limite dispara UMA ação**. Edite `RamCleanerConfig.json`:
 > Modified (é cache limpo), então não há risco de loop.
 
 > **Guarda anti-stutter:** com `EnableGameDetection: true`, se um app pesado/jogo
-> estiver aberto e a ação for `All`, ela é rebaixada automaticamente para
-> `SafeStrong` naquele ciclo — protege o jogo mesmo no perfil de desktop.
+> estiver aberto e a ação for `Safe` ou `All` (as que aparam Working Sets), ela é
+> rebaixada automaticamente para `SafeStrong` naquele ciclo — protege o jogo mesmo
+> com o padrão de desktop.
 
 ### **Limite em % e/ou GB (RAM USADA)**
 
