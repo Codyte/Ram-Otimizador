@@ -7,11 +7,11 @@
 #   L71    New-MonitorTask
 #   L106   New-PeriodicTask
 #   L153   Add-ContextMenu
-#   L179   Remove-ContextMenu
-#   L189   Remove-AutoExec
-#   L201   Get-MonitorProcesses
-#   L210   Invoke-FullCleanup
-#   L274   Show-TaskStatus
+#   L183   Remove-ContextMenu
+#   L193   Remove-AutoExec
+#   L205   Get-MonitorProcesses
+#   L214   Invoke-FullCleanup
+#   L278   Show-TaskStatus
 # ======================= END NAV INDEX =======================
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -151,13 +151,18 @@ $CtxBases    = @(
 )
 
 function Add-ContextMenu {
-    # Mesma numeracao/acoes do menu de limpeza manual (Menu.ps1 opcao 4).
+    # 00 = painel grafico (shim proprio, sem -Action); 01-05 = mesma numeracao/
+    # acoes do menu de limpeza manual (Menu.ps1 opcao 4). Subchaves ordenam
+    # alfabetico -> 00 fica no topo. Cada entrada = @(rotulo, comando completo).
+    $uiShim = Join-Path $ScriptDir "Iniciar-UI.vbs"
+    $cleanCmd = { param($a) "`"{0}`" //nologo `"{1}`" {2}" -f $CtxWScript, $CtxShim, $a }
     $items = [ordered]@{
-        '01' = @('1 - Working Sets',                    'WorkingSets')
-        '02' = @('2 - Modified Page List',              'ModifiedPageList')
-        '03' = @('3 - Standby List',                    'Standby')
-        '04' = @('4 - All (1 -> 2 -> 3)',               'All')
-        '05' = @('5 - Safe (1 -> 2, pre-desligamento)', 'Safe')
+        '00' = @('Abrir Painel (UI)',                   ("`"{0}`" //nologo `"{1}`"" -f $CtxWScript, $uiShim))
+        '01' = @('1 - Working Sets',                    (& $cleanCmd 'WorkingSets'))
+        '02' = @('2 - Modified Page List',              (& $cleanCmd 'ModifiedPageList'))
+        '03' = @('3 - Standby List',                    (& $cleanCmd 'Standby'))
+        '04' = @('4 - All (1 -> 2 -> 3)',               (& $cleanCmd 'All'))
+        '05' = @('5 - Safe (1 -> 2, pre-desligamento)', (& $cleanCmd 'Safe'))
     }
     foreach ($base in $CtxBases) {
         New-Item -Path $base -Force | Out-Null
@@ -168,11 +173,10 @@ function Add-ContextMenu {
             $sub = "$base\shell\$k"
             New-Item -Path "$sub\command" -Force | Out-Null
             Set-ItemProperty -Path $sub -Name '(default)' -Value $items[$k][0]
-            Set-ItemProperty -Path "$sub\command" -Name '(default)' -Value `
-                ("`"{0}`" //nologo `"{1}`" {2}" -f $CtxWScript, $CtxShim, $items[$k][1])
+            Set-ItemProperty -Path "$sub\command" -Name '(default)' -Value $items[$k][1]
         }
     }
-    Write-Host "[OK] Menu de contexto criado: botao direito no fundo da area de trabalho/pasta -> Ram-Otimizador > 1-5." -ForegroundColor Green
+    Write-Host "[OK] Menu de contexto criado: botao direito no fundo da area de trabalho/pasta -> Ram-Otimizador > Painel + 1-5." -ForegroundColor Green
     Write-Host "     Windows 11: fica em 'Mostrar mais opcoes'. Cada acao auto-eleva (UAC) ao clicar." -ForegroundColor Gray
 }
 

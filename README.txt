@@ -17,15 +17,23 @@ COMO USAR
     7  Testar sistema (RAMMap, permissoes, arquivos)
     8  Ver logs de hoje
     9  Editar configuracao (JSON)
+    U  Abrir painel grafico (UI no navegador, modo app)
     T  Iniciar/Parar a tarefa em 2o plano
     0  Sair
 
   No monitor em primeiro plano (opcao 3), pressione Q para parar e voltar.
   Perfis aplicados pelo menu valem sozinhos no proximo ciclo do monitor.
 
+  PAINEL GRAFICO (opcao U): interface visual completa no navegador (Edge modo
+  app = janela propria, sem barra). RAM ao vivo, limpezas, perfis, configuracao,
+  tarefa 2o plano, logs e resumo. Servidor local (so localhost, com token de
+  sessao); fecha sozinho ~90s depois de fechar a janela. Requer qualquer
+  navegador moderno (Edge ja vem no Windows 10/11).
+
   MENU DE CONTEXTO (opcional): menu 6 -> opcao 4 adiciona "Ram-Otimizador"
-  ao botao direito (fundo da area de trabalho/pasta) com as limpezas 1-5;
-  opcao 5 remove. Win11: fica em "Mostrar mais opcoes". Auto-eleva ao clicar.
+  ao botao direito (fundo da area de trabalho/pasta) com "Abrir Painel (UI)"
+  no topo + as limpezas 1-5; opcao 5 remove. Win11: fica em "Mostrar mais
+  opcoes". Auto-eleva ao clicar.
 
 COMO FUNCIONA (resumo)
 --------------------------------------------------------------------------------
@@ -39,6 +47,7 @@ COMO FUNCIONA (resumo)
 ESTRUTURA
 --------------------------------------------------------------------------------
   scripts/   Codigo (Menu.ps1, LimparRAM-Inteligente.ps1, RamCommon.ps1, ...) + RAMMap.exe
+  ui/        index.html (painel grafico; servido por scripts/UI-Server.ps1)
   config/    RamCleanerConfig.json   + RamCleanerConfig.GUIA.jsonc (guia comentado)
   logs/      RAMMap_YYYY-MM-DD.log + monitor-status.json (criados em runtime)
   docs/      README.md  (guia completo)

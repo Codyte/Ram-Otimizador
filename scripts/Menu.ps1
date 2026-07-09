@@ -190,6 +190,7 @@ function Show-ResumoSemana {
     Write-Host "  7 - Testar sistema (RAMMap, permissoes, arquivos)" -ForegroundColor White
     Write-Host "  8 - Ver logs de hoje" -ForegroundColor White
     Write-Host "  9 - Editar configuracao (JSON)" -ForegroundColor White
+    Write-Host "  U - Abrir painel grafico (UI no navegador, modo app)" -ForegroundColor White
     Write-Host "  R - Resumo da semana (limpezas, RAM liberada, pico)" -ForegroundColor White
     Write-Host "  T - Iniciar/Parar a tarefa em 2o plano" -ForegroundColor White
     Write-Host "  0 - Sair" -ForegroundColor White
@@ -210,6 +211,14 @@ function Show-ResumoSemana {
         "7" { & (Join-Path $ScriptDir "Teste-LimparRAM.ps1") }
         "8" { Show-Logs }
         "9" { notepad $Global:RamConfigPath }
+        "U" {
+            # Nao bloqueia o menu: o server roda em processo proprio e se
+            # encerra sozinho ~90s depois de a janela fechar.
+            Start-Process powershell.exe -WindowStyle Hidden -ArgumentList `
+                "-NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $ScriptDir 'UI-Server.ps1')`""
+            Write-Host "`n[OK] Painel abrindo no navegador (aguarde o UAC se aparecer)." -ForegroundColor Green
+            Start-Sleep -Seconds 2
+        }
         "R" { Show-ResumoSemana }
         "T" {
             $t = Get-ScheduledTask -TaskName $Global:RamTaskName -ErrorAction SilentlyContinue

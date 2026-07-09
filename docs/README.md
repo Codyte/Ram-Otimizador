@@ -29,6 +29,7 @@ Clique direito em **`INICIAR.bat`** → *Executar como administrador*. Ele auto-
 7 - Testar sistema (RAMMap, permissoes, arquivos)
 8 - Ver logs de hoje
 9 - Editar configuracao (JSON)
+U - Abrir painel grafico (UI no navegador, modo app)
 T - Iniciar/Parar a tarefa em 2o plano
 0 - Sair
 ```
@@ -39,13 +40,34 @@ T - Iniciar/Parar a tarefa em 2o plano
 
 ---
 
+### **Painel gráfico (opção U)** 🖥️
+
+Interface visual completa que abre no navegador em **modo app** (janela própria, sem
+barra de endereço — parece programa nativo). Tudo do script em um lugar só:
+
+- **RAM ao vivo** — gauge de células estilo pente de memória (em uso / standby recuperável / livre), atualizado a cada 2s
+- **Limpeza manual** — os 6 tipos (Safe, SafeStrong, Standby, Working Sets, Modified, All) com o resultado em GB
+- **Perfis** — cards com todos os perfis + análise/recomendação do sistema com 1 clique
+- **Configuração** — formulário de todos os campos do JSON (validado pelo mesmo parser do engine)
+- **Tarefa 2º plano** — iniciar/parar/criar o monitor contínuo
+- **Logs e resumo** — log de hoje ao vivo + estatísticas dos últimos 7 dias
+
+Como funciona por dentro: `scripts/UI-Server.ps1` sobe um servidor HTTP **apenas em
+localhost**, com **token de sessão** aleatório (nenhum outro programa consegue chamar a
+API), serve `ui/index.html` (arquivo único, zero dependências/CDN — funciona offline) e
+se encerra sozinho ~90s após a janela fechar. Requer qualquer navegador moderno
+(Edge já vem no Windows 10/11). Também abre pelo botão direito: *Ram-Otimizador →
+Abrir Painel (UI)*.
+
+---
+
 ### **Auto-Execução em background (Recomendado)**
 
 No menu, escolha **6 - Configurar auto-execucao**. Opções:
 - **1** = Monitor contínuo no boot/logon (roda como SYSTEM, escondido) — recomendado p/ desktop/games
 - **2** = Verificação periódica leve a cada N min — bom p/ servidor
 - **3** = Ver status da tarefa
-- **4** = Adicionar menu de contexto (botão direito na área de trabalho/pasta → Ram-Otimizador → limpeza 1-5)
+- **4** = Adicionar menu de contexto (botão direito na área de trabalho/pasta → Ram-Otimizador → Abrir Painel (UI) + limpeza 1-5)
 - **5** = Remover menu de contexto
 - **6** = Remover auto-execução (só o agendamento)
 - **7** = Parar tudo e limpar resíduos (mata monitores + remove agendamentos)
