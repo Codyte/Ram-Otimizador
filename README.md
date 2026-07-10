@@ -4,7 +4,19 @@
 
 Um otimizador de RAM **inteligente e automático** para Windows que detecta jogos pesados e limpa sua memória estrategicamente — sem engasgo, sem lag spikes, sem destruir seu SSD.
 
-> **Por que importa:** Rust, Warzone, Elden Ring, jogos 3D pesados comem RAM rapidinho. Quando bate nos ~80%, você sente: travos, queda de FPS, lag. Este script limpa ANTES de ficar crítico, mantendo sua RAM "fresca" enquanto você joga.
+> **Por que importa:** Rust, Warzone, Elden Ring, jogos 3D pesados comem RAM rapidinho. Quando bate nos ~80%, você sente: travos, queda de FPS, lag. Este script limpa ANTES de ficar crítico, mantendo seu sistema sempre responsivo.
+
+---
+
+## 🛠️ Tecnologia
+
+| Linguagem | Percentual |
+|-----------|-----------|
+| **PowerShell** | 82.3% |
+| **HTML** | 16% |
+| **Outras** | 1.7% |
+
+Este projeto é desenvolvido principalmente em **PowerShell** com interface gráfica em **HTML/CSS/JavaScript** para o painel visual.
 
 ---
 
@@ -396,4 +408,4 @@ MIT — Use livremente
 ---
 
 **Feito com ❤️ para gamers brasileiros**  
-**v1.0** — 2026-07-09
+**v1.0** — 2026-07-09 | **Atualizado:** 2026-07-10
