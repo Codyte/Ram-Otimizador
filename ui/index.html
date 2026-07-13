@@ -163,7 +163,8 @@ summary .hint{letter-spacing:0;text-transform:none;font-size:10px;color:var(--mu
       <div class="act"><button class="btn" data-clean="SafeStrong">SafeStrong</button><span>Não toca nos apps abertos (zero engasgo) — o monitor usa sozinho quando há jogo aberto</span></div>
       <div class="act"><button class="btn" data-clean="Standby">Standby</button><span>Só o cache standby (mais leve)</span></div>
       <div class="act"><button class="btn" data-clean="WorkingSets">Working Sets</button><span>Só apara a memória dos apps abertos</span></div>
-      <div class="act"><button class="btn" data-clean="ModifiedPageList">Modified</button><span>Só descarrega páginas sujas pro disco</span></div>
+      <div class="act"><button class="btn" data-clean="SystemWorkingSets">System WS</button><span>Só apara a memória do sistema/cache de arquivos</span></div>
+      <div class="act"><button class="btn" data-clean="ModifiedPageList">Modified</button><span>Só descarrega páginas sujas pro disco (lista costuma ser pequena — ganho em GB é baixo mesmo funcionando)</span></div>
     </div>
     <div class="result" id="cleanResult"></div>
   </section>
@@ -200,7 +201,7 @@ summary .hint{letter-spacing:0;text-transform:none;font-size:10px;color:var(--mu
       <div class="field"><label for="f_ThresholdClean">Limite (%)</label><input id="f_ThresholdClean"></div>
       <div class="field"><label for="f_ThresholdCleanGB">Limite (GB, opcional)</label><input id="f_ThresholdCleanGB" placeholder="vazio = só %"></div>
       <div class="field"><label for="f_CleanAction">Ação ao atingir</label>
-        <select id="f_CleanAction"><option>Safe</option><option>All</option><option>SafeStrong</option><option>Standby</option><option>WorkingSets</option><option>ModifiedPageList</option></select></div>
+        <select id="f_CleanAction"><option>Safe</option><option>All</option><option>SafeStrong</option><option>Standby</option><option>WorkingSets</option><option>SystemWorkingSets</option><option>ModifiedPageList</option></select></div>
       <div class="field"><label for="f_CleanEngine">Motor</label>
         <select id="f_CleanEngine"><option>Auto</option><option>Native</option><option>RAMMap</option></select></div>
       <div class="field"><label for="f_CheckIntervalSeconds">Intervalo de checagem (s)</label><input id="f_CheckIntervalSeconds" type="number" min="1"></div>

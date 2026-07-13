@@ -10,11 +10,11 @@
 #   L274   Write-Heartbeat
 #   L308   Write-CycleLog
 #   L318   Test-MemoryAndClean
-#   L403   Wait-MonitorInterval
-#   L422   Start-RAMMonitor
-#   L496   Assert-Admin
-#   L507   Show-Status
-#   L539   Sem params: este script e o motor, nao a interface -------------------
+#   L415   Wait-MonitorInterval
+#   L434   Start-RAMMonitor
+#   L508   Assert-Admin
+#   L519   Show-Status
+#   L551   Sem params: este script e o motor, nao a interface -------------------
 # ======================= END NAV INDEX =======================
 
 [CmdletBinding(DefaultParameterSetName = 'Menu')]
@@ -219,7 +219,7 @@ function Invoke-RAMClean {
         return $true
     }
     catch {
-        Write-Log "Erro ao executar RAMMap: $_" "ERROR"
+        Write-Log "Erro na limpeza (motor $engineName): $_" "ERROR"
         return $false
     }
 }
@@ -333,10 +333,22 @@ function Test-MemoryAndClean {
         return
     }
 
-    $rearmAt = [math]::Max(0, $thr - $hyst)
-    if (-not $script:CleanArmed -and $PercentUsed -le $rearmAt) {
-        $script:CleanArmed = $true
-        Write-Log "Histerese rearmada: RAM $PercentUsed% <= ${rearmAt}%." "DEBUG"
+    # Histerese em BANDA: apos limpar, so nao repete enquanto a RAM ficar
+    # oscilando perto do limite (entre thr-hyst e thr+hyst). Cair abaixo de
+    # thr-hyst rearma (comportamento classico); subir alem de thr+hyst TAMBEM
+    # rearma — sem isso, uma limpeza que nao derruba a RAM abaixo de thr-hyst
+    # travava o monitor em WaitingRearm para sempre enquanto a RAM so subia
+    # (visto em produção: RAM a 60% por horas sem nenhuma limpeza).
+    $rearmAt     = [math]::Max(0, $thr - $hyst)
+    $rearmHighAt = [math]::Min(100, $thr + $hyst)
+    if (-not $script:CleanArmed) {
+        if ($PercentUsed -le $rearmAt) {
+            $script:CleanArmed = $true
+            Write-Log "Histerese rearmada: RAM $PercentUsed% <= ${rearmAt}%." "DEBUG"
+        } elseif ($PercentUsed -ge $rearmHighAt) {
+            $script:CleanArmed = $true
+            Write-Log "Histerese rearmada por ALTA: RAM $PercentUsed% >= ${rearmHighAt}% (subiu apos a limpeza; cooldown segue valendo)." "DEBUG"
+        }
     }
 
     if ($PercentUsed -le $thr) {
@@ -348,7 +360,7 @@ function Test-MemoryAndClean {
 
     if (-not $script:CleanArmed) {
         Write-Heartbeat -Stats $Stats -StandbyMB $StandbyMB -State "WaitingRearm"
-        Write-CycleLog -Key 'waitrearm-high' -Message "$statsTxt | limite atingido (> ${thr}%) mas aguardando histerese rearmar (<= ${rearmAt}%)."
+        Write-CycleLog -Key 'waitrearm-high' -Message "$statsTxt | limite atingido (> ${thr}%) mas aguardando histerese rearmar (cair <= ${rearmAt}% ou subir >= ${rearmHighAt}%)."
         return
     }
 

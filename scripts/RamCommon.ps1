@@ -246,7 +246,7 @@ function Get-RamConfigComments {
         StepDelayMs          = "Delay em ms entre os passos de uma limpeza de varias etapas (deixa as paginas migrarem). 0 = sem delay."
         CheckIntervalSeconds = "Segundos entre cada verificacao de memoria."
         CleanCooldownSeconds = "Tempo minimo em segundos entre duas limpezas (anti-thrashing)."
-        HysteresisPercent    = "Margem (pontos %) para re-armar apos limpar, evitando repetir no limiar."
+        HysteresisPercent    = "Banda (pontos %) anti-repeticao no limiar: apos limpar, so limpa de novo quando a RAM cair abaixo de limite-histerese OU subir acima de limite+histerese."
         MinStandbyMB         = "So aplica a acao 'Standby' se houver pelo menos esta Standby List (MB)."
         Enabled              = "Ativar/desativar o monitor continuo (true/false)."
         LogLevel             = "DEBUG (tudo), INFO (padrao), WARNING (so alertas), ERROR (so erros)."

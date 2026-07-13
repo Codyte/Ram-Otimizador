@@ -254,10 +254,16 @@ function Invoke-UiRoute {
             if (-not $body) { Send-Json $Ctx @{ error = 'body vazio' } 400; return }
             $cfg = Read-RamConfig
             # Merge so de campos conhecidos do schema (nunca Comments/Profile via config)
-            $editable = @((Get-RamConfigSchema).Keys) | Where-Object { $_ -notin @('Comments') }
+            $editable = @((Get-RamConfigSchema).Keys) | Where-Object { $_ -notin @('Comments', 'Profile') }
+            $changed = $false
             foreach ($p in $body.PSObject.Properties) {
-                if ($editable -icontains $p.Name) { $cfg.($p.Name) = $p.Value }
+                if ($editable -icontains $p.Name -and "$($cfg.($p.Name))" -ne "$($p.Value)") {
+                    $cfg.($p.Name) = $p.Value
+                    $changed = $true
+                }
             }
+            # Valores editados a mao nao correspondem mais a nenhum preset.
+            if ($changed) { $cfg.Profile = 'personalizado' }
             $cfg = Normalize-RamConfig -Config $cfg -Schema (Get-RamConfigSchema)
             Write-RamConfig $cfg
             Send-Json $Ctx (Read-RamConfig)

@@ -4,8 +4,17 @@ logs/
 # Backups automaticos de config invalida
 config/*.bad-*.json
 
+# Config e pessoal (cada maquina tem a sua; guia fica em RamCleanerConfig.GUIA.jsonc)
+config/RamCleanerConfig.json
+
 # Cache do navindex
 .navindex-cache.json
-config/RamCleanerConfig.json
-config/RamCleanerConfig.json
-config/RamCleanerConfig.json
+
+# Binario da Sysinternals: licenca NAO permite redistribuir. Cada um baixa em
+# https://learn.microsoft.com/sysinternals/downloads/rammap (opcional; o motor
+# nativo funciona sem ele).
+scripts/RAMMap.exe
+scripts/RAMMap64.exe
+
+# Notas internas de sessao (handoffs do assistente)
+.handoff/
