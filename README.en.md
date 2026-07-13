@@ -1,11 +1,19 @@
 # 🎮 Ram-Otimizador — RAM cleaner and memory optimizer for Windows
 
-[![CI](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml/badge.svg)](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/Codyte/Ram-Otimizador?display_name=release&style=flat-square&label=Version)](https://github.com/Codyte/Ram-Otimizador/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
+[![PowerShell Version](https://img.shields.io/badge/PowerShell-5.1%2B-blue?style=flat-square)](https://www.microsoft.com/powershell)
+[![Windows Support](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?style=flat-square)](https://www.microsoft.com/windows)
+[![GitHub Stars](https://img.shields.io/github/stars/Codyte/Ram-Otimizador?style=flat-square)](https://github.com/Codyte/Ram-Otimizador)
+[![GitHub Forks](https://img.shields.io/github/forks/Codyte/Ram-Otimizador?style=flat-square)](https://github.com/Codyte/Ram-Otimizador/fork)
+
 🇧🇷 [Versão em português](README.md)
 
 **Automatic memory monitor: when RAM usage crosses your configured threshold, it cleans on its own — via the native Windows API, with every cleanup logged to CSV.**
 
-A PowerShell RAM cleaner for Windows 10/11: trims app working sets and flushes dirty pages using `NtSetSystemInformation` (no external programs), with anti-stutter game detection, ready-made profiles, a graphical panel and a per-cleanup results history.
+A PowerShell RAM cleaner for Windows 10/11: trims app working sets and flushes dirty pages using `NtSetSystemInformation` (no external programs), with anti-stutter game detection, local graphical panel, and 7 ready-made profiles.
+
+Perfect for: **Gamers** 🎮 • **Content Creators** 🎬 • **24/7 Servers** 🖥️ • **Low-RAM Laptops** 💻
 
 ![Ram-Otimizador panel](docs/ui-screenshot.png)
 
@@ -26,7 +34,7 @@ Every cleanup is recorded in `logs/cleanup-history.csv`. Results of **209 cleanu
 | Modified | Flushes dirty pages only | 0.3 GB | 1.3 GB | 15 |
 | Standby | Standby cache only | ~0 | ~0 | 3 |
 
-**Read carefully:** `Safe` is the default because it's what actually frees memory. `SafeStrong` frees little — its value is **not touching open apps** (zero hitching), which is why the monitor switches to it automatically when a game is running. `Standby` alone is nearly useless: Windows already releases that cache on demand.
+**Read carefully:** `Safe` is the default because it's what actually frees memory. `SafeStrong` frees little — its value is **not touching open apps** (zero hitching), which is why the monitor swaps `All`→`SafeStrong` while a game runs.
 
 Your numbers will vary with hardware and load. Run it and check your own CSV.
 
@@ -34,7 +42,7 @@ Your numbers will vary with hardware and load. Run it and check your own CSV.
 
 ## 📌 What to expect
 
-- **Relieves memory pressure.** When RAM runs near the limit (80%+), the system starts paging and hitching; freeing memory in that scenario reduces paging and the stalls it causes. With comfortable RAM the effect is small — the monitor simply doesn't trigger.
+- **Relieves memory pressure.** When RAM runs near the limit (80%+), the system starts paging and hitching; freeing memory in that scenario reduces paging and the stalls it causes. With comfortable RAM the effect is small.
 - **Nothing gets closed.** Cleaning acts on cache and working sets; your programs stay open and running.
 - **Disk consequence:** flushing Modified writes dirty pages to disk (they'd go there anyway on the next paging); the cooldown limits how often this happens.
 - **Where it helps most:** 8-16GB machines under load (game + browser + Discord), servers that degrade over time, and heavy video/3D editing.
@@ -44,7 +52,7 @@ Your numbers will vary with hardware and load. Run it and check your own CSV.
 ## ✅ What it DOES (all of it in the code)
 
 - **Automatic monitor** (scheduled task, runs as SYSTEM, invisible): cleans when RAM crosses the threshold, with band hysteresis (no cleaning loops) and a configurable cooldown.
-- **Real anti-stutter:** with a game or creative app open, `All`/`Safe` actions become `SafeStrong` automatically (they don't touch the game's working set). Detected list: Rust, Warzone, Battlefield, GTA V, Valorant, CS:GO/CS2, Fortnite, League, Steam, Epic + Blender, Premiere, DaVinci, Photoshop, After Effects, Unreal, Unity, 3ds Max, Maya.
+- **Real anti-stutter:** with a game or creative app open, `All`/`Safe` actions become `SafeStrong` automatically (they don't touch the game's working set). Detected list: Rust, Warzone, Battlefield, GTA, Blender, Premiere, Discord, OBS and more.
 - **Native engine:** direct `NtSetSystemInformation` — no external program required. RAMMap (Sysinternals) is only an optional fallback.
 - **Local graphical panel** (screenshot above): manual cleanup, profiles, config, logs, RAM chart of the last hours with cleanup marks. Local HTTP server with a session token.
 - **7 ready-made profiles** + automatic recommendation that inspects your hardware.
@@ -132,7 +140,7 @@ A: No. It cleans cache and trims working sets; nothing is closed.
 A: If your RAM lives near the limit while gaming, reducing pressure avoids paging and the hitches it causes. With comfortable RAM the effect is small.
 
 **Q: Which cleanup frees the most?**
-A: `Safe` (the default): trims working sets and flushes modified — 3.3GB median in our logs. Purging only standby frees almost nothing, because Windows already releases that cache on demand (which is why it's not the default).
+A: `Safe` (the default): trims working sets and flushes modified — 3.3GB median in our logs. Purging only standby frees almost nothing, because Windows already releases that cache on demand.
 
 **Q: Does it need admin?**
 A: Yes — the cleanup API requires it. The panel self-elevates via UAC; the scheduled task runs as SYSTEM without bothering you.
