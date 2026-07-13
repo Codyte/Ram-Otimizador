@@ -4,7 +4,7 @@
 Universal index: every folder below -> the files it holds (names only). A `→ __navi__.md` marker means that folder has a symbol map — open `<that path>/__navi__.md` for exact line numbers (2 reads total: this tree -> folder map).
 
 ## `./` (3 files) → __navi__.md
-CONTRIBUTING.md(196)  README.md(411)  README.txt(68)
+CONTRIBUTING.md(196)  README.md(413)  README.txt(68)
 
 ## `config/` (1 files)
 RamCleanerConfig.json(34)
