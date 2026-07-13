@@ -3,8 +3,8 @@
 
 Universal index: every folder below -> the files it holds (names only). A `→ __navi__.md` marker means that folder has a symbol map — open `<that path>/__navi__.md` for exact line numbers (2 reads total: this tree -> folder map).
 
-## `./` (5 files) → __navi__.md
-CONTRIBUTING.md(196)  README.en.md(376)  README.md(424)  README.txt(68)  install.ps1(31)
+## `./` (5 files)
+CONTRIBUTING.md(196)  README.en.md(192)  README.md(190)  README.txt(68)  install.ps1(31)
 
 ## `config/` (1 files)
 RamCleanerConfig.json(34)

@@ -1,91 +1,53 @@
-# 🎮 Ram-Otimizador — O Limpador de RAM Inteligente para Gamers
+# 🎮 Ram-Otimizador — Limpador de RAM honesto para Windows
 
 [![CI](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml/badge.svg)](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml)
 🇺🇸 [English version](README.en.md)
 
-**Limpe sua RAM com inteligência. +20 FPS nos seus jogos. Nunca mais stutter.**
+**Monitora sua RAM e limpa sozinho quando passa do limite — com números medidos de verdade, não promessas de FPS.**
 
-Um otimizador de RAM **inteligente e automático** para Windows que detecta jogos pesados e limpa sua memória estrategicamente — sem engasgo, sem lag spikes, sem destruir seu SSD.
+A maioria dos "limpadores de RAM" promete milagre. Este aqui faz uma coisa só, bem feita: quando o uso de memória passa do limite que você configurou, ele apara o working set dos apps e descarrega páginas sujas usando a API nativa do Windows (`NtSetSystemInformation`) — e **loga cada limpeza num CSV** para você conferir o ganho real.
 
 ![Painel do Ram-Otimizador](docs/ui-screenshot.png)
 
-> **Por que importa:** Rust, Warzone, Elden Ring, jogos 3D pesados comem RAM rapidinho. Quando bate nos ~80%, você sente: travos, queda de FPS, lag. Este script limpa ANTES de ficar crítico, mantendo seu sistema sempre responsivo.
+---
+
+## 📊 Números reais (medidos, não inventados)
+
+Todas as limpezas ficam registradas em `logs/cleanup-history.csv`. Estes são os resultados de **209 limpezas reais** na máquina de desenvolvimento (32GB de RAM):
+
+| Ação | O que faz | Mediana liberada | Máximo | N |
+|------|-----------|------------------|--------|---|
+| **Safe** (padrão) | Working Sets → Modified | **3,3 GB** | 7,7 GB | 171 |
+| All | Tudo, incluindo cache standby | 0,8 GB | 4,2 GB | 8 |
+| Working Sets | Só apara memória dos apps | 0,7 GB | 2,1 GB | 10 |
+| SafeStrong | Modified + Standby (não toca nos apps) | 0,4 GB | 0,4 GB | 2 |
+| Modified | Só descarrega páginas sujas | 0,3 GB | 1,3 GB | 15 |
+| Standby | Só o cache standby | ~0 | ~0 | 3 |
+
+**Leia com atenção:** `Safe` é o padrão porque é o que libera de verdade. `SafeStrong` libera pouco — o valor dele é **não tocar nos apps abertos** (zero engasgo), por isso o monitor troca para ele automaticamente quando detecta jogo rodando. `Standby` sozinho é quase inútil: o Windows já solta esse cache sob demanda.
+
+Seus números vão variar com hardware e carga. Rode e confira no seu próprio CSV.
 
 ---
 
-## 🛠️ Tecnologia
+## 🚫 O que este script NÃO promete
 
-| Linguagem | Percentual |
-|-----------|-----------|
-| **PowerShell** | 82.3% |
-| **HTML** | 16% |
-| **Outras** | 1.7% |
+- **Não promete FPS.** Nunca medimos FPS e não vamos inventar números. O que a limpeza faz é reduzir pressão de memória *quando você está perto do limite* — se sua RAM está folgada, limpar não muda nada no jogo.
+- **Não "acelera o PC"** que já está saudável. Ele ajuda quando a RAM vive em 80%+ e o sistema começa a paginar.
+- **Não mata processos.** Só cache e working sets; seus programas continuam abertos.
 
-Este projeto é desenvolvido principalmente em **PowerShell** com interface gráfica em **HTML/CSS/JavaScript** para o painel visual.
+Se você tem 32GB e usa 40%, você não precisa disto. Se vive em 85% com jogo + Chrome + Discord, é para você.
 
 ---
 
-## ⚡ O Problema
+## ✅ O que ele FAZ (de verdade, tudo no código)
 
-Seu PC tem 16GB de RAM. Você abre Rust + Discord + Chrome + OBS.
-
-**Sem otimização:**
-```
-T=0min:   Rust: 6GB | Discord: 1.2GB | Chrome: 4GB | Sistema: 2.1GB = 13.3GB (83% CRÍTICO)
-         └─ FPS cai de 100→60. Stutter. Inimigo te mata.
-         
-T=5min:   Pior. Agora tá 95%. Sistema congelado.
-```
-
-**Com Ram-Otimizador:**
-```
-T=0min:   RAM: 13.3GB (83%) → ALERTA → Limpeza SafeStrong
-         └─ Libera Standby + Modified → RAM agora: 7.2GB (45%)
-         └─ FPS volta para 120 steady
-         
-T=5min:   RAM: 14.1GB (88%) → ALERTA → Limpeza automática
-         └─ RAM agora: 7.8GB (49%)
-         └─ Você não sente NADA. Jogo roda smooth.
-```
-
-**Diferença real:** 100 FPS stável vs. 60 FPS com travos.
-
----
-
-## 🎯 O Que Você Ganha
-
-### ✅ **Mais FPS sem perder qualidade**
-- Gaming profile reduz stutter em 80%
-- Mantém sua taxa de quadros alta
-- Não mata processos (só limpa cache)
-
-### ✅ **Detecção automática de jogos pesados**
-- Reconhece: Rust, Warzone, Elden Ring, Blender, Premiere, etc
-- Muda para modo "SafeStrong" (limpeza sem lag)
-- Você nem precisa configurar nada
-
-### ✅ **Funciona silencioso em background**
-- Roda como tarefa agendada (invisível)
-- Sem janelas azuis, sem barulho
-- Configurable: a cada 15s, 30s, 1min — você escolhe
-
-### ✅ **Configuração por cenário**
-- **Gaming intenso:** Rust, Warzone, Elden Ring
-- **Criação:** Blender, Premiere, DaVinci Resolve
-- **Servidor 24/7:** Keep-alive com limpeza leve
-- **PC com pouca RAM (≤8GB):** Agressivo mas eficiente
-
-### ✅ **Controle total em um menu**
-```
-MENU PRINCIPAL
-1 - Analisar sistema (recomendação automática)
-2 - Escolher perfil (gaming, criação, servidor...)
-3 - Monitor em tempo real
-4 - Limpeza manual rápida
-5 - Dashboard ao vivo
-6 - Auto-execução / agendamento
-7 - Teste de permissões
-```
+- **Monitor automático** (tarefa agendada, roda como SYSTEM, invisível): limpa quando a RAM passa do limite, com histerese em banda (não fica limpando em loop) e cooldown configurável.
+- **Anti-stutter real:** com jogo ou app de criação aberto, ações `All`/`Safe` viram `SafeStrong` sozinhas (não tocam no working set do jogo). Lista detectada: Rust, Warzone, Battlefield, GTA V, Valorant, CS:GO/CS2, Fortnite, League, Steam, Epic + Blender, Premiere, DaVinci, Photoshop, After Effects, Unreal, Unity, 3ds Max, Maya.
+- **Motor nativo:** `NtSetSystemInformation` direto — sem depender de programa externo. RAMMap (Sysinternals) é só fallback opcional.
+- **Painel gráfico local** (screenshot acima): limpeza manual, perfis, config, logs, gráfico de RAM das últimas horas com marcas de limpeza. Servidor HTTP local com token de sessão.
+- **7 perfis prontos** + recomendação automática que analisa seu hardware.
+- **Tudo logado:** log diário + CSV de histórico por limpeza (antes/depois/GB).
 
 ---
 
@@ -107,318 +69,122 @@ cd Ram-Otimizador
 
 ### 2. Executar
 ```
-Duplo clique em INICIAR.bat → abre o Painel gráfico (UI), com tudo (auto-eleva via UAC)
+Duplo clique em INICIAR.bat → abre o Painel gráfico (auto-eleva via UAC)
 Prefere o menu clássico no console? INICIAR.bat cmd
 ```
 
-### 3. Escolher Perfil
+### 3. Escolher perfil e ativar o monitor
 ```
-Menu aparece automaticamente
-Opção 2 → "Gaming Intenso" (se você joga)
-ou
-Opção 1 → Análise automática (deixa a gente adivinhar)
-```
-
-### 4. Ativar Auto-Execução
-```
-Menu → Opção 6 → 1 (Monitor contínuo no boot)
-Pronto! Seu PC cuida da RAM sozinho agora.
+No painel: seção "Perfis" → clique num card (ou "Analisar sistema e recomendar")
+Depois: "Criar monitor contínuo" → pronto, seu PC cuida da RAM sozinho.
 ```
 
 ---
 
-## 🎮 Cenários Reais
+## ⚙️ Perfis (valores reais do código)
 
-### Cenário 1: Rust + Streaming (Twitch)
-```
-Sem otimização:
-- Rust: 6GB + OBS: 2.5GB + Chrome: 2GB = 10.5GB
-- Sistema precisa de 2GB, sobra 3.5GB
-- CRÍTICO! Trava, stream fica lagada, chat vê drops
+| Perfil | Limite | Ação | Checagem | Cooldown | Para quem |
+|--------|--------|------|----------|----------|-----------|
+| **equilibrado** | 82% | Safe | 30s | 120s | Desktop no dia a dia |
+| **games** | 80% | Safe* | 15s | 60s | Jogos (*vira SafeStrong com jogo aberto) |
+| **servidor-24-7** | 90% | Safe | 60s | 300s | Servidor: raro e leve |
+| **workstation-criacao** | 88% | SafeStrong | 30s | 180s | Edição de vídeo/3D (não trima os editores) |
+| **low-ram** | 72% | Safe | 20s | 90s | Máquinas com ≤8GB |
+| **economia-bateria** | 90% | Safe | 120s | 600s | Notebook na bateria |
+| **agressivo-maximo** | 65% | All | 15s | 45s | Máxima RAM livre a qualquer custo |
 
-Com Ram-Otimizador (Gaming profile):
-- Detecta Rust = entra em SafeStrong
-- A cada 20s: limpa Modified + Standby
-- RAM mantém: ~7-8GB livre
-- Resultado: 60FPS stable, stream @720p60 smooth
-- Ganho: +40FPS, zero lag no stream
-```
-
-### Cenário 2: Blender (Render Heavy)
-```
-Sem otimização:
-- Blender: 14GB (modeling scene)
-- Render começa, RAM bate em 100%
-- Sistema parado. Render trava.
-
-Com Ram-Otimizador (Criação profile):
-- Detecta Blender (editor pesado)
-- Limpeza mais agressiva mas "SafeStrong" (sem lag)
-- Render process sempre tem RAM fresca
-- Resultado: Render 2x mais rápido
-- Ganho: Render sem interrupção
-```
-
-### Cenário 3: Elden Ring (Single-Player)
-```
-Sem otimização:
-- Game: 7GB + Discord: 1.2GB + Chrome: 2.5GB = 10.7GB
-- Bossfight critical moment: trava 1s (inimigo te mata)
-
-Com Ram-Otimizador (Gaming profile):
-- Detects Elden Ring
-- Limpeza automática a cada 15s
-- RAM nunca ultrapassa 50% used
-- Resultado: Zero stutters, smooth 60FPS
-- Ganho: Você mata o boss, não morre
-```
+Todo perfil também configura histerese, standby mínima e nível de log. Editou qualquer valor na mão? O perfil vira `personalizado`.
 
 ---
 
-## ⚙️ Configuração por Perfil
+## 🔧 Ações de limpeza explicadas
 
-### Gaming Intenso (Recomendado para Jogos)
-```json
-{
-  "ThresholdClean": 80,          // Limpa quando RAM > 80%
-  "CleanAction": "SafeStrong",   // Forte mas sem stutter
-  "CheckIntervalSeconds": 15,    // Verifica a cada 15 segundos
-  "EnableGameDetection": true    // Detecta jogos automaticamente
-}
-```
-**Resultado:** +15-30 FPS, zero stutters
-
-### Criação (Blender/Premiere)
-```json
-{
-  "ThresholdClean": 85,
-  "CleanAction": "SafeStrong",   // Não mata o render
-  "CheckIntervalSeconds": 20,
-  "EnableGameDetection": true    // Detecta editores
-}
-```
-**Resultado:** Render 2-3x mais rápido
-
-### Servidor 24/7
-```json
-{
-  "ThresholdClean": 90,
-  "CleanAction": "SafeStrong",
-  "CheckIntervalSeconds": 60,    // Light, não interrompe
-  "CleanCooldownSeconds": 300    // Evita thrashing
-}
-```
-**Resultado:** Uptime 100%, zero crashes
-
-### PC com Pouca RAM (≤8GB)
-```json
-{
-  "ThresholdClean": 72,
-  "CleanAction": "All",          // Mais agressivo
-  "CheckIntervalSeconds": 20,    // Mais frequente
-  "EnableGameDetection": true
-}
-```
-**Resultado:** Viável jogar em 8GB (antes impossível)
+- **Safe** (padrão) — Working Sets → Modified. Maior liberação real (mediana 3,3GB nos nossos logs) e **preserva o cache de disco** (standby).
+- **All** — tudo: Working Sets → System WS → Modified → Standby. Use antes de abrir uma tarefa pesada. Purgar standby joga fora cache que o Windows reaproveitaria.
+- **SafeStrong** — Modified + Standby, **sem tocar nos apps abertos**. Libera pouco, mas zero engasgo — é o modo anti-stutter que o monitor usa com jogo aberto.
+- **Standby / Working Sets / System WS / Modified** — cada passo isolado, para testar o efeito na sua máquina.
 
 ---
 
-## 🎮 Detecção Automática de Apps
+## 💻 Menu clássico (console)
 
-O sistema reconhece e otimiza para:
-
-| App | Tipo | Ação |
-|-----|------|------|
-| Rust, Warzone, Elden Ring, GTA, Cyberpunk | Jogos | SafeStrong (anti-stutter) |
-| Blender, Premiere, DaVinci | Editores 3D/Vídeo | SafeStrong (anti-interruption) |
-| Chrome, Firefox | Navegadores | Modo leve (não mata browser) |
-| Discord, OBS, Spotify | Utilidades | Modo leve |
-
-**Como funciona:** Se detectar jogo pesado + RAM alta → muda `All` → `SafeStrong` automaticamente
-
----
-
-## 📊 Benchmarks (Testes Reais)
-
-### Setup: Rust + Discord + Chrome
-| Métrica | Antes | Depois | Ganho |
-|---------|-------|--------|-------|
-| **FPS Médio** | 65 fps | 105 fps | +62% |
-| **FPS Mínimo** | 45 fps | 98 fps | +118% |
-| **Stutters/min** | 4-6 | 0-1 | -85% |
-| **RAM Usada** | 95% | 52% | -45% |
-| **SSD Writes** | 2.5GB/h | 0.3GB/h | -88% |
-
-**Conclusão:** Quase dobrando FPS, eliminando travos
-
-### Setup: Blender Rendering (1920x1080, 500 samples)
-| Métrica | Antes | Depois | Ganho |
-|---------|-------|--------|-------|
-| **Render Time** | 8m 32s | 3m 18s | -62% |
-| **Memory Pressure** | 99% constant | 70% avg | -30% |
-| **Crashes** | 2 durante render | 0 | 100% |
-
----
-
-## 🔧 Ações de Limpeza Explicadas
-
-### All (TUDO)
-- Libera: Working Sets + System WS + Modified + Standby
-- **Quando usar:** Desktop normal, baixa RAM, você quer o máximo
-- **Risco:** Pode causar 1-2s de lag enquanto limpa
-
-### SafeStrong (Recomendado para Gaming/Criação)
-- Libera: Modified + Standby APENAS (não toca em Working Sets)
-- **Quando usar:** Jogo rodando, não quer lag spike
-- **Benefit:** Libera 70% da RAM sem engasgo
-
-### Standby (Leve)
-- Libera: Cache apenas
-- **Quando usar:** Bateria, uso leve, notebook
-- **Benefit:** Mínimo impacto, máxima economia
-
----
-
-## 💻 Comandos Úteis
-
-### Ver RAM em tempo real
-```powershell
-# Terminal mostra seu uso de RAM continuamente
-Menu > Opção 3 (Monitor em tempo real)
 ```
-
-### Forçar limpeza manual agora
-```powershell
-Menu > Opção 4 (Limpeza manual rápida)
+1 - Analisar sistema e recomendar perfil
+2 - Escolher perfil pré-pronto
+3 - Iniciar MONITOR contínuo (primeiro plano)
+4 - Limpeza manual rápida
+5 - Dashboard ao vivo
+6 - Configurar auto-execução / agendamento / menu de contexto
+7 - Testar sistema (permissões, arquivos)
+8 - Ver logs de hoje
+9 - Editar configuração (JSON)
 ```
-
-### Editar configuração
-```powershell
-Menu > Opção 9 (Editar RamCleanerConfig.json)
-# ou direto:
-notepad "C:\Scripts\Ram Otimizador\config\RamCleanerConfig.json"
-```
-
-### Ver logs do dia
-```powershell
-Menu > Opção 8 (Ver logs)
-# ou direto:
-Get-Content "C:\Scripts\Ram Otimizador\logs\RAMMap_$(Get-Date -Format 'yyyy-MM-dd').log" -Tail 50
-```
-
-### Desinstalar tudo
-```powershell
-Menu > Opção 6 > 7 (Remover auto-execução e tarefas)
-```
-
----
-
-## 📈 Por Que Funciona Tão Bem
-
-### 1. **Limpeza estratégica (não mata tudo)**
-Ao invés de forçar tudo, o sistema limpa apenas Standby e Modified — isso libera RAM sem interromper processos ativos.
-
-### 2. **Detecção de jogas + anti-stutter**
-Quando um jogo pesado tá ativo, muda para SafeStrong automaticamente → mantém o jogo smooth mesmo limpando.
-
-### 3. **Limpa ANTES de crítico**
-A maioria dos limpadores reage quando RAM tá 95%+ (muito tarde, já tá lagado). Este limpa em 80-85% (preemptivo).
-
-### 4. **Freqüência ajustável**
-Podia limpar a cada 1 segundo (mata SSD). Aqui você controla: 15s, 30s, 60s — balanço perfeito.
-
-### 5. **API nativa do Windows**
-Usa `NtSetSystemInformation` (suporte nativo Windows, não precisa RAMMap se preferir).
-
----
-
-## 🤝 Contributing
-
-Procuramos contribuidores para:
-
-- [ ] **Tradução para inglês** — Help English speakers use it
-- [ ] **Suporte macOS/Linux** — Port para other OS
-- [ ] **GUI moderna** — Substituir menu text por interface visual
-- [ ] **Detecção mais jogos** — Add mais games à lista automática
-- [ ] **Mobile notification** — Avisar via webhook/Discord
-- [ ] **Benchmark script** — Automatizar testes de performance
-
-**Como participar:** Veja [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
 ## ❓ FAQ
 
 **P: Vai matar meus programas abertos?**
-R: Não. Limpa cache, não mata processos. Programas continuam rodando normal.
+R: Não. Limpa cache e apara working sets; nada é fechado.
 
-**P: Piora o SSD?**
-R: Ao contrário. Focando em Standby (cache), evita muitas escritas no disco.
+**P: Vou ganhar FPS?**
+R: Depende. Se sua RAM vive perto do limite enquanto joga, reduzir a pressão evita paginação e os engasgos que ela causa. Se sua RAM está folgada, não muda nada — e a gente prefere te dizer isso do que inventar um número.
+
+**P: Limpar RAM não é placebo?**
+R: Purgar standby toda hora, sim, é quase placebo (por isso NÃO é o padrão aqui). Aparar working sets e descarregar modified libera memória de verdade — está tudo medido no CSV.
 
 **P: Precisa de admin?**
-R: Sim, mas uma única vez (para instalar a tarefa agendada).
+R: Sim — a API de limpeza exige. O painel auto-eleva via UAC; a tarefa agendada roda como SYSTEM sem te incomodar.
 
-**P: Funciona com 8GB de RAM?**
-R: Sim! Na verdade, melhora MUITO em 8GB. Você consegue rodar Rust que antes era impossível.
+**P: Funciona com 8GB?**
+R: Sim, é onde mais ajuda (perfil `low-ram`). Com pouca RAM a pressão é constante.
 
-**P: Pode usar em notebook?**
-R: Sim. Tem perfil "Standby only" para economizar bateria.
-
-**P: Atrapalha o ingame recording?**
-R: Não. Usa limpeza SafeStrong que não interrompe stream/OBS.
+**P: E o SSD?**
+R: Transparência: descarregar Modified *escreve* as páginas sujas no disco (elas iriam para lá de qualquer forma no próximo paging). O cooldown existe justamente para não fazer isso toda hora.
 
 ---
 
 ## 🐛 Troubleshooting
 
-### "Não funciona nada"
-1. Abra PowerShell como Admin
-2. Execute: `Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser -Force`
-3. Rode `INICIAR.bat` novamente
-
-### "Script desaparece"
-Check logs: `Menu > 8`
-Se tiver ERROR, procure a linha específica.
+### "Não abre / não faz nada"
+1. PowerShell como Admin: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force`
+2. Rode `INICIAR.bat` de novo (aceite o UAC)
 
 ### "Limpeza em background não libera RAM"
-A tarefa roda como SYSTEM. Menu → 6 → recrie a tarefa.
+A tarefa roda como SYSTEM. Painel → "Criar monitor contínuo" (recria a tarefa).
 
-### "Quer mais agressividade?"
-Edite `RamCleanerConfig.json`:
-```json
-{ "ThresholdClean": 70 }  // Limpa em 70% ao invés de 80%
-```
+### "Monitor não limpa nunca"
+Confira o limite (`ThresholdClean`) vs seu uso real, e o log de hoje (painel ou `Menu > 8`).
 
----
-
-## 📊 Benchmarks & Dados
-
-- **+20-60 FPS** em gaming (média 40 FPS)
-- **-85% stutters** (eliminando micro-lags)
-- **-88% SSD writes** (economizando vida útil)
-- **+200% uptime** em servidor (sem crashes)
-
-**Baseado em:** 50+ testes reais com diferentes configs
+### Quer mais agressividade?
+Painel → Configuração → Limite 70-75%, ou aplique o perfil `agressivo-maximo`.
 
 ---
 
-## 📝 License
+## 🛠️ Tecnologia
 
-MIT — Use livremente
+PowerShell (82%) + painel em HTML/CSS/JS vanilla (16%). Sem dependências externas, sem telemetria, sem instalador esquisito — é script, você pode ler tudo.
 
----
-
-## 🚀 Próximos Passos
-
-1. **Baixar** → `git clone ...`
-2. **Executar** → Clique direito `INICIAR.bat`
-3. **Configurar** → Menu opção 2 (escolha seu perfil)
-4. **Deixar rodando** → Ativa auto-execução (Menu 6)
-5. **Ganhar FPS** → Enjoy! 🎮
-
-**Esperando feedback! Se ganhou FPS, contribua com uma ⭐**
+Qualidade: testes de regressão da config + PSScriptAnalyzer rodam no CI a cada push.
 
 ---
 
-**Feito com ❤️ para gamers brasileiros**  
-**v1.0** — 2026-07-09 | **Atualizado:** 2026-07-10
+## 🤝 Contribuindo
+
+- [ ] **UI em inglês** — o painel e menus são pt-BR hoje
+- [ ] **Mais jogos na detecção** — a lista está em `scripts/RamCommon.ps1` (`$Global:RamGameApps`)
+- [ ] **Benchmark de FPS de verdade** — se você tem como medir frametime antes/depois com rigor, é a contribuição mais valiosa que existe aqui
+- [ ] **Notificação** — webhook/Discord quando limpar
+
+**Como participar:** [CONTRIBUTING.md](CONTRIBUTING.md)
+
+---
+
+## 📝 Licença
+
+MIT — use livremente.
+
+---
+
+**Feito com ❤️ no Brasil. Sem números inventados: se está no README, está no código ou no CSV.**
+**v1.0** — 2026-07-13

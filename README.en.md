@@ -1,93 +1,55 @@
-# 🎮 Ram-Otimizador — The Smart RAM Cleaner for Gamers
+# 🎮 Ram-Otimizador — An honest RAM cleaner for Windows
 
 [![CI](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml/badge.svg)](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml)
 🇧🇷 [Versão em português](README.md)
 
-**Clean your RAM intelligently. +20 FPS in your games. Never stutter again.**
+**Watches your RAM and cleans automatically when usage crosses your threshold — with actually measured numbers, not FPS promises.**
 
-A **smart and automatic** RAM optimizer for Windows that detects heavy games and cleans your memory strategically — no hitching, no lag spikes, no SSD wear.
+Most "RAM cleaners" promise miracles. This one does one thing well: when memory usage crosses the limit you configured, it trims app working sets and flushes dirty pages using the native Windows API (`NtSetSystemInformation`) — and **logs every cleanup to a CSV** so you can verify the real gain yourself.
 
 ![Ram-Otimizador panel](docs/ui-screenshot.png)
-
-> **Why it matters:** Rust, Warzone, Elden Ring — heavy 3D games eat RAM fast. When it hits ~80%, you feel it: hitches, FPS drops, lag. This script cleans BEFORE it gets critical, keeping your system responsive at all times.
 
 > **Note:** the app UI and menus are currently in Portuguese (pt-BR). English UI is on the contribution wishlist below.
 
 ---
 
-## 🛠️ Tech
+## 📊 Real numbers (measured, not invented)
 
-| Language | Share |
-|----------|-------|
-| **PowerShell** | 82.3% |
-| **HTML** | 16% |
-| **Other** | 1.7% |
+Every cleanup is recorded in `logs/cleanup-history.csv`. These are the results of **209 real cleanups** on the development machine (32GB RAM):
 
-Mostly **PowerShell**, with an **HTML/CSS/JavaScript** graphical panel.
+| Action | What it does | Median freed | Max | N |
+|--------|--------------|--------------|-----|---|
+| **Safe** (default) | Working Sets → Modified | **3.3 GB** | 7.7 GB | 171 |
+| All | Everything, incl. standby cache | 0.8 GB | 4.2 GB | 8 |
+| Working Sets | Trims app memory only | 0.7 GB | 2.1 GB | 10 |
+| SafeStrong | Modified + Standby (doesn't touch apps) | 0.4 GB | 0.4 GB | 2 |
+| Modified | Flushes dirty pages only | 0.3 GB | 1.3 GB | 15 |
+| Standby | Standby cache only | ~0 | ~0 | 3 |
 
----
+**Read carefully:** `Safe` is the default because it's what actually frees memory. `SafeStrong` frees little — its value is **not touching open apps** (zero hitching), which is why the monitor switches to it automatically when a game is running. `Standby` alone is nearly useless: Windows already releases that cache on demand.
 
-## ⚡ The Problem
-
-Your PC has 16GB of RAM. You open Rust + Discord + Chrome + OBS.
-
-**Without optimization:**
-```
-T=0min:   Rust: 6GB | Discord: 1.2GB | Chrome: 4GB | System: 2.1GB = 13.3GB (83% CRITICAL)
-         └─ FPS drops 100→60. Stutter. Enemy kills you.
-
-T=5min:   Worse. Now at 95%. System frozen.
-```
-
-**With Ram-Otimizador:**
-```
-T=0min:   RAM: 13.3GB (83%) → ALERT → SafeStrong cleanup
-         └─ Frees Standby + Modified → RAM now: 7.2GB (45%)
-         └─ FPS back to 120 steady
-
-T=5min:   RAM: 14.1GB (88%) → ALERT → automatic cleanup
-         └─ RAM now: 7.8GB (49%)
-         └─ You feel NOTHING. Game runs smooth.
-```
-
-**Real difference:** stable 100 FPS vs. 60 FPS with hitches.
+Your numbers will vary with hardware and load. Run it and check your own CSV.
 
 ---
 
-## 🎯 What You Get
+## 🚫 What this script does NOT promise
 
-### ✅ **More FPS without losing quality**
-- Gaming profile cuts stutter by 80%
-- Keeps your framerate high
-- Doesn't kill processes (only cleans cache)
+- **No FPS promises.** We never measured FPS and won't invent numbers. What cleaning does is reduce memory pressure *when you're near the limit* — if your RAM is comfortable, cleaning changes nothing in your game.
+- **It won't "speed up" a healthy PC.** It helps when RAM lives at 80%+ and the system starts paging.
+- **It doesn't kill processes.** Only cache and working sets; your programs stay open.
 
-### ✅ **Automatic heavy-game detection**
-- Recognizes: Rust, Warzone, Elden Ring, Blender, Premiere, etc
-- Switches to "SafeStrong" mode (lag-free cleanup)
-- Zero configuration needed
+If you have 32GB and use 40%, you don't need this. If you live at 85% with a game + Chrome + Discord, it's for you.
 
-### ✅ **Runs silently in the background**
-- Runs as a scheduled task (invisible)
-- No console windows, no noise
-- Configurable: every 15s, 30s, 1min — your choice
+---
 
-### ✅ **Per-scenario configuration**
-- **Heavy gaming:** Rust, Warzone, Elden Ring
-- **Content creation:** Blender, Premiere, DaVinci Resolve
-- **24/7 server:** keep-alive with light cleanup
-- **Low-RAM PC (≤8GB):** aggressive but efficient
+## ✅ What it DOES (all of it in the code)
 
-### ✅ **Full control in one menu**
-```
-MAIN MENU
-1 - Analyze system (automatic recommendation)
-2 - Choose profile (gaming, creation, server...)
-3 - Real-time monitor
-4 - Quick manual cleanup
-5 - Live dashboard
-6 - Auto-run / scheduling
-7 - Permission test
-```
+- **Automatic monitor** (scheduled task, runs as SYSTEM, invisible): cleans when RAM crosses the threshold, with band hysteresis (no cleaning loops) and a configurable cooldown.
+- **Real anti-stutter:** with a game or creative app open, `All`/`Safe` actions become `SafeStrong` automatically (they don't touch the game's working set). Detected list: Rust, Warzone, Battlefield, GTA V, Valorant, CS:GO/CS2, Fortnite, League, Steam, Epic + Blender, Premiere, DaVinci, Photoshop, After Effects, Unreal, Unity, 3ds Max, Maya.
+- **Native engine:** direct `NtSetSystemInformation` — no external program required. RAMMap (Sysinternals) is only an optional fallback.
+- **Local graphical panel** (screenshot above): manual cleanup, profiles, config, logs, RAM chart of the last hours with cleanup marks. Local HTTP server with a session token.
+- **7 ready-made profiles** + automatic recommendation that inspects your hardware.
+- **Everything logged:** daily log + per-cleanup history CSV (before/after/GB).
 
 ---
 
@@ -109,268 +71,122 @@ cd Ram-Otimizador
 
 ### 2. Run
 ```
-Double-click INICIAR.bat → opens the graphical panel (UI) with everything (self-elevates via UAC)
+Double-click INICIAR.bat → opens the graphical panel (self-elevates via UAC)
 Prefer the classic console menu? INICIAR.bat cmd
 ```
 
-### 3. Pick a Profile
+### 3. Pick a profile and enable the monitor
 ```
-Menu shows up automatically
-Option 2 → "Heavy Gaming" (if you game)
-or
-Option 1 → Automatic analysis (let it guess)
-```
-
-### 4. Enable Auto-Run
-```
-Menu → Option 6 → 1 (Continuous monitor at boot)
-Done! Your PC manages its own RAM now.
+In the panel: "Perfis" section → click a card (or "Analisar sistema" for a recommendation)
+Then: "Criar monitor contínuo" → done, your PC manages its own RAM.
 ```
 
 ---
 
-## ⚙️ Profile Configuration
+## ⚙️ Profiles (actual values from the code)
 
-### Heavy Gaming (recommended for games)
-```json
-{
-  "ThresholdClean": 80,          // Clean when RAM > 80%
-  "CleanAction": "SafeStrong",   // Strong but stutter-free
-  "CheckIntervalSeconds": 15,    // Check every 15 seconds
-  "EnableGameDetection": true    // Auto-detect games
-}
-```
-**Result:** +15-30 FPS, zero stutters
+| Profile | Threshold | Action | Check | Cooldown | Who it's for |
+|---------|-----------|--------|-------|----------|--------------|
+| **equilibrado** | 82% | Safe | 30s | 120s | Everyday desktop |
+| **games** | 80% | Safe* | 15s | 60s | Gaming (*becomes SafeStrong with a game open) |
+| **servidor-24-7** | 90% | Safe | 60s | 300s | Servers: rare and light |
+| **workstation-criacao** | 88% | SafeStrong | 30s | 180s | Video/3D editing (won't trim your editors) |
+| **low-ram** | 72% | Safe | 20s | 90s | Machines with ≤8GB |
+| **economia-bateria** | 90% | Safe | 120s | 600s | Laptop on battery |
+| **agressivo-maximo** | 65% | All | 15s | 45s | Max free RAM at any cost |
 
-### Content Creation (Blender/Premiere)
-```json
-{
-  "ThresholdClean": 85,
-  "CleanAction": "SafeStrong",   // Doesn't kill the render
-  "CheckIntervalSeconds": 20,
-  "EnableGameDetection": true    // Detects editors
-}
-```
-**Result:** 2-3x faster renders
-
-### 24/7 Server
-```json
-{
-  "ThresholdClean": 90,
-  "CleanAction": "SafeStrong",
-  "CheckIntervalSeconds": 60,    // Light, non-intrusive
-  "CleanCooldownSeconds": 300    // Avoids thrashing
-}
-```
-**Result:** 100% uptime, zero crashes
-
-### Low-RAM PC (≤8GB)
-```json
-{
-  "ThresholdClean": 72,
-  "CleanAction": "All",          // More aggressive
-  "CheckIntervalSeconds": 20,    // More frequent
-  "EnableGameDetection": true
-}
-```
-**Result:** gaming on 8GB becomes viable
+Every profile also sets hysteresis, minimum standby and log level. Edited any value by hand? The profile becomes `personalizado` (custom).
 
 ---
 
-## 🎮 Automatic App Detection
+## 🔧 Clean actions explained
 
-The system recognizes and optimizes for:
-
-| App | Type | Action |
-|-----|------|--------|
-| Rust, Warzone, Elden Ring, GTA, Cyberpunk | Games | SafeStrong (anti-stutter) |
-| Blender, Premiere, DaVinci | 3D/Video editors | SafeStrong (anti-interruption) |
-| Chrome, Firefox | Browsers | Light mode (won't kill the browser) |
-| Discord, OBS, Spotify | Utilities | Light mode |
-
-**How it works:** heavy game detected + high RAM → switches `All` → `SafeStrong` automatically
+- **Safe** (default) — Working Sets → Modified. Largest real gain (3.3GB median in our logs) and **preserves the disk cache** (standby).
+- **All** — everything: Working Sets → System WS → Modified → Standby. Use before opening a heavy task. Purging standby throws away cache Windows would reuse.
+- **SafeStrong** — Modified + Standby, **without touching open apps**. Frees little, but zero hitching — the anti-stutter mode the monitor uses while a game runs.
+- **Standby / Working Sets / System WS / Modified** — each step isolated, to test the effect on your machine.
 
 ---
 
-## 📊 Benchmarks (Real Tests)
+## 💻 Classic console menu
 
-### Setup: Rust + Discord + Chrome
-| Metric | Before | After | Gain |
-|--------|--------|-------|------|
-| **Avg FPS** | 65 fps | 105 fps | +62% |
-| **Min FPS** | 45 fps | 98 fps | +118% |
-| **Stutters/min** | 4-6 | 0-1 | -85% |
-| **RAM Used** | 95% | 52% | -45% |
-| **SSD Writes** | 2.5GB/h | 0.3GB/h | -88% |
-
-**Conclusion:** nearly double the FPS, hitches gone
-
-### Setup: Blender Rendering (1920x1080, 500 samples)
-| Metric | Before | After | Gain |
-|--------|--------|-------|------|
-| **Render Time** | 8m 32s | 3m 18s | -62% |
-| **Memory Pressure** | 99% constant | 70% avg | -30% |
-| **Crashes** | 2 during render | 0 | 100% |
-
----
-
-## 🔧 Clean Actions Explained
-
-### All (EVERYTHING)
-- Frees: Working Sets + System WS + Modified + Standby
-- **When to use:** regular desktop, low RAM, you want the max
-- **Risk:** may cause 1-2s of lag while cleaning
-
-### SafeStrong (recommended for Gaming/Creation)
-- Frees: Modified + Standby ONLY (doesn't touch Working Sets)
-- **When to use:** game running, no lag spikes wanted
-- **Benefit:** frees 70% of RAM with zero hitching
-
-### Standby (light)
-- Frees: cache only
-- **When to use:** on battery, light use, laptop
-- **Benefit:** minimal impact, maximum savings
-
----
-
-## 💻 Useful Commands
-
-### Watch RAM in real time
-```powershell
-Menu > Option 3 (Real-time monitor)
 ```
-
-### Force a manual cleanup now
-```powershell
-Menu > Option 4 (Quick manual cleanup)
+1 - Analyze system and recommend a profile
+2 - Choose a ready-made profile
+3 - Start continuous MONITOR (foreground)
+4 - Quick manual cleanup
+5 - Live dashboard
+6 - Auto-run / scheduling / context menu
+7 - Test system (permissions, files)
+8 - Today's logs
+9 - Edit configuration (JSON)
 ```
-
-### Edit the configuration
-```powershell
-Menu > Option 9 (Edit RamCleanerConfig.json)
-# or directly:
-notepad "C:\Scripts\Ram Otimizador\config\RamCleanerConfig.json"
-```
-
-### Today's logs
-```powershell
-Menu > Option 8 (View logs)
-# or directly:
-Get-Content "C:\Scripts\Ram Otimizador\logs\RAMMap_$(Get-Date -Format 'yyyy-MM-dd').log" -Tail 50
-```
-
-### Uninstall everything
-```powershell
-Menu > Option 6 > 7 (Remove auto-run and tasks)
-```
-
----
-
-## 📈 Why It Works So Well
-
-### 1. **Strategic cleanup (doesn't kill everything)**
-Instead of forcing everything out, it cleans only Standby and Modified — freeing RAM without interrupting active processes.
-
-### 2. **Game detection + anti-stutter**
-When a heavy game is running, it switches to SafeStrong automatically → the game stays smooth even during cleanup.
-
-### 3. **Cleans BEFORE critical**
-Most cleaners react at 95%+ RAM (too late, already lagging). This one cleans at 80-85% (preemptive).
-
-### 4. **Adjustable frequency**
-It could clean every second (kills the SSD). Here you're in control: 15s, 30s, 60s — the right balance.
-
-### 5. **Native Windows API**
-Uses `NtSetSystemInformation` (native Windows support, no RAMMap needed).
-
----
-
-## 🤝 Contributing
-
-Looking for contributors for:
-
-- [ ] **English UI** — translate the panel and menus
-- [ ] **macOS/Linux support** — port to other OSes
-- [ ] **More game detection** — add more games to the auto list
-- [ ] **Mobile notification** — alerts via webhook/Discord
-- [ ] **Benchmark script** — automate performance testing
-
-**How to join:** see [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
 ## ❓ FAQ
 
 **Q: Will it kill my open programs?**
-A: No. It cleans cache, doesn't kill processes. Programs keep running normally.
+A: No. It cleans cache and trims working sets; nothing is closed.
 
-**Q: Does it wear out the SSD?**
-A: The opposite. By focusing on Standby (cache), it avoids many disk writes.
+**Q: Will I gain FPS?**
+A: It depends. If your RAM lives near the limit while gaming, reducing pressure avoids paging and the hitches it causes. If your RAM is comfortable, nothing changes — and we'd rather tell you that than invent a number.
+
+**Q: Isn't RAM cleaning placebo?**
+A: Purging standby all the time — yes, mostly placebo (which is why it is NOT the default here). Trimming working sets and flushing modified pages frees real memory — it's all measured in the CSV.
 
 **Q: Does it need admin?**
-A: Yes, but only once (to install the scheduled task).
+A: Yes — the cleanup API requires it. The panel self-elevates via UAC; the scheduled task runs as SYSTEM without bothering you.
 
-**Q: Does it work with 8GB of RAM?**
-A: Yes! It actually helps the MOST on 8GB. You can run Rust where it was impossible before.
+**Q: Does it work with 8GB?**
+A: Yes, that's where it helps most (`low-ram` profile). With little RAM the pressure is constant.
 
-**Q: Can I use it on a laptop?**
-A: Yes. There's a "Standby only" profile to save battery.
-
-**Q: Does it break in-game recording?**
-A: No. SafeStrong cleanup doesn't interrupt stream/OBS.
+**Q: What about my SSD?**
+A: Transparency: flushing Modified *writes* dirty pages to disk (they'd go there anyway on the next paging). The cooldown exists precisely so this doesn't happen constantly.
 
 ---
 
 ## 🐛 Troubleshooting
 
-### "Nothing works"
-1. Open PowerShell as Admin
-2. Run: `Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope CurrentUser -Force`
-3. Run `INICIAR.bat` again
-
-### "Script disappears"
-Check logs: `Menu > 8`
-If there's an ERROR, find the specific line.
+### "Won't open / does nothing"
+1. PowerShell as Admin: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force`
+2. Run `INICIAR.bat` again (accept the UAC prompt)
 
 ### "Background cleanup doesn't free RAM"
-The task runs as SYSTEM. Menu → 6 → recreate the task.
+The task runs as SYSTEM. Panel → "Criar monitor contínuo" (recreates the task).
 
-### "Want more aggressiveness?"
-Edit `RamCleanerConfig.json`:
-```json
-{ "ThresholdClean": 70 }  // Clean at 70% instead of 80%
-```
+### "The monitor never cleans"
+Check the threshold (`ThresholdClean`) vs your actual usage, and today's log (panel or `Menu > 8`).
+
+### Want more aggressiveness?
+Panel → Configuration → threshold 70-75%, or apply the `agressivo-maximo` profile.
 
 ---
 
-## 📊 Benchmarks & Data
+## 🛠️ Tech
 
-- **+20-60 FPS** in gaming (average 40 FPS)
-- **-85% stutters** (micro-lags eliminated)
-- **-88% SSD writes** (longer drive life)
-- **+200% uptime** on servers (no crashes)
+PowerShell (82%) + vanilla HTML/CSS/JS panel (16%). No external dependencies, no telemetry, no weird installer — it's scripts, you can read everything.
 
-**Based on:** 50+ real tests with different configs
+Quality: config regression tests + PSScriptAnalyzer run in CI on every push.
+
+---
+
+## 🤝 Contributing
+
+- [ ] **English UI** — the panel and menus are pt-BR today
+- [ ] **More games in detection** — the list lives in `scripts/RamCommon.ps1` (`$Global:RamGameApps`)
+- [ ] **A real FPS benchmark** — if you can measure frametimes before/after rigorously, this is the most valuable contribution there is
+- [ ] **Notifications** — webhook/Discord on cleanup
+
+**How to join:** [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
 ## 📝 License
 
-MIT — use it freely
+MIT — use it freely.
 
 ---
 
-## 🚀 Next Steps
-
-1. **Install** → one-liner above
-2. **Run** → `INICIAR.bat`
-3. **Configure** → Menu option 2 (pick your profile)
-4. **Leave it running** → enable auto-run (Menu 6)
-5. **Gain FPS** → Enjoy! 🎮
-
-**Feedback welcome! If you gained FPS, drop a ⭐**
-
----
-
-**Made with ❤️ by Brazilian gamers, for everyone**
+**Made with ❤️ in Brazil. No invented numbers: if it's in the README, it's in the code or in the CSV.**
 **v1.0** — 2026-07-13
