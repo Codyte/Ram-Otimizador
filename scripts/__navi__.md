@@ -14,8 +14,8 @@
 - **RamCommon.ps1** (733 ln)
   <sub>L46:Test-Admin  L55:Set-RAMMapEulaKey  L65:Resolve-RAMMap  L161:Initialize-NativeClean  L175:Invoke-NativeCleanStep  L195:Clear-RamOldLogs  L215:Get-RamConfigSchema  L239:Get-RamConfigComments  L260:Convert-RamLegacyConfig  L275:Backup-RamInvalidConfig  L291:ConvertTo-RamIntSetting  L315:ConvertTo-RamBoolSetting  L334:ConvertFrom-RamThresholdToken  L353:ConvertTo-RamThresholdSetting  L376:Normalize-RamConfig  L423:Read-RamConfig  L453:Write-RamConfig  L471:ConvertTo-UsagePercentToken  L488:Resolve-UsageThresholdPercent  L500:Format-UsageThreshold  L520:Get-RamProfiles  L581:Apply-RamProfile  L601:Get-MemoryStats  L616:Get-StandbyListMB …</sub>
 - **Teste-LimparRAM.ps1** (167 ln)
-- **UI-Server.ps1** (387 ln)
-  <sub>L77:Send-Json  L86:Send-Text  L95:Read-JsonBody  L106:Get-UiStatus  L141:Invoke-UiClean  L165:Set-UiTask  L230:Invoke-UiRoute</sub>
+- **UI-Server.ps1** (389 ln)
+  <sub>L77:Send-Json  L86:Send-Text  L95:Read-JsonBody  L106:Get-UiStatus  L142:Invoke-UiClean  L166:Set-UiTask  L231:Invoke-UiRoute</sub>
 - **test-RamConfig.ps1** (58 ln)
   <sub>L9:Check</sub>
 

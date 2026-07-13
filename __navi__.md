@@ -16,8 +16,8 @@ DEV_TO_ARTICLE.md(219)  LAUNCH_CHECKLIST.md(118)  README.md(310)  REDDIT_TEMPLAT
 monitor-status.json(17)
 
 ## `scripts/` (9 files) → __navi__.md
-Configurar-AutoExecucao.ps1(317)  Dashboard-RAM.ps1(212)  LimparRAM-Inteligente.ps1(557)  Limpeza-ContextMenu.ps1(25)  Menu.ps1(241)  RamCommon.ps1(733)  Teste-LimparRAM.ps1(167)  UI-Server.ps1(387)  test-RamConfig.ps1(58)
+Configurar-AutoExecucao.ps1(317)  Dashboard-RAM.ps1(212)  LimparRAM-Inteligente.ps1(557)  Limpeza-ContextMenu.ps1(25)  Menu.ps1(241)  RamCommon.ps1(733)  Teste-LimparRAM.ps1(167)  UI-Server.ps1(389)  test-RamConfig.ps1(58)
 
 ## `ui/` (1 files) → __navi__.md
-index.html(434)
+index.html(484)
 

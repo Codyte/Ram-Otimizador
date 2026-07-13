@@ -63,6 +63,9 @@ header h1 b{color:var(--cool);font-weight:600}
 #stick i.sb{background:repeating-linear-gradient(45deg,transparent,transparent 2px,color-mix(in srgb,var(--cool) 45%,transparent) 2px,color-mix(in srgb,var(--cool) 45%,transparent) 4px);border-color:color-mix(in srgb,var(--cool) 30%,transparent)}
 .legend{display:flex;gap:12px;margin-top:6px;font-size:10px;color:var(--muted)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+/* sparkline: RAM% das últimas horas + marcas de limpeza */
+#spark{display:block;width:100%;height:46px;margin-top:8px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:4px}
 
 /* ===== [CSS] Grid de cards ===== */
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -149,6 +152,13 @@ summary .hint{letter-spacing:0;text-transform:none;font-size:10px;color:var(--mu
     <span><i id="lgUsed" style="background:var(--heat)"></i>em uso</span>
     <span><i style="background:repeating-linear-gradient(45deg,transparent,transparent 2px,#5CCFE677 2px,#5CCFE677 4px)"></i>standby (recuperável)</span>
     <span><i style="background:var(--panel2);border:1px solid var(--line)"></i>livre</span>
+  </div>
+  <svg id="spark" viewBox="0 0 600 60" preserveAspectRatio="none" role="img"
+       aria-label="Uso de RAM nas últimas 3 horas com marcas de limpeza"></svg>
+  <div class="legend">
+    <span><i style="background:var(--cool);height:2px;vertical-align:2px"></i>RAM% · últimas 3h</span>
+    <span><i style="background:var(--ok);width:2px"></i>limpeza (passe o mouse)</span>
+    <span><i style="background:var(--heat);height:2px;vertical-align:2px;opacity:.55"></i>limite</span>
   </div>
 </section>
 
@@ -276,6 +286,34 @@ function renderStick(pct, sbPct) {
   $('lgUsed').style.background = col;
 }
 
+/* ===== [JS] Sparkline: RAM% das últimas 3h + marcas de limpeza =====
+   Pontos vivos vêm do poll (1 a cada 10s); o passado é semeado pelo
+   histórico de limpezas (before/after de cada uma). SVG puro, sem lib. */
+const SPARK_MS = 3 * 3600 * 1000, SPARK_STEP = 10000;
+let sparkLive = [], sparkSeed = [], sparkMarks = [], sparkThr = null;
+function pushSpark(pct) {
+  const t = Date.now(), last = sparkLive[sparkLive.length - 1];
+  if (last && t - last.t < SPARK_STEP) return;
+  sparkLive.push({ t, pct });
+  while (sparkLive.length && sparkLive[0].t < t - SPARK_MS) sparkLive.shift();
+  drawSpark();
+}
+function drawSpark() {
+  const t1 = Date.now(), t0 = t1 - SPARK_MS;
+  const X = t => ((t - t0) / SPARK_MS * 600).toFixed(1);
+  const Y = p => (58 - p / 100 * 56).toFixed(1);
+  const vec = 'vector-effect="non-scaling-stroke"';
+  let out = '';
+  if (sparkThr != null)
+    out += `<line x1="0" x2="600" y1="${Y(sparkThr)}" y2="${Y(sparkThr)}" stroke="var(--heat)" stroke-dasharray="3 4" opacity=".5" ${vec}/>`;
+  sparkMarks.forEach(m => { if (m.t >= t0)
+    out += `<line x1="${X(m.t)}" x2="${X(m.t)}" y1="2" y2="58" stroke="var(--ok)" opacity=".55" ${vec}><title>${m.txt}</title></line>`; });
+  const pts = sparkSeed.filter(p => p.t >= t0).concat(sparkLive).sort((a, b) => a.t - b.t);
+  if (pts.length > 1)
+    out += `<polyline fill="none" stroke="var(--cool)" stroke-width="1.5" ${vec} points="${pts.map(p => X(p.t) + ',' + Y(p.pct)).join(' ')}"/>`;
+  $('spark').innerHTML = out;
+}
+
 /* ===== [JS] Poll de status (2s) — também mantém o server vivo ===== */
 let pollFails = 0;
 async function poll() {
@@ -291,6 +329,8 @@ async function poll() {
     $('stThr').textContent = s.threshold;
     const sbPct = s.standbyMB >= 0 ? (s.standbyMB / 1024) / m.TotalMemoryGB * 100 : 0;
     renderStick(m.PercentUsed, sbPct);
+    sparkThr = s.thresholdPct ?? null;
+    pushSpark(m.PercentUsed);
 
     setPill('pillMon', s.monitor.running, s.monitor.running ? 'monitor ativo' : 'monitor inativo');
     const ts = s.taskState;
@@ -425,6 +465,16 @@ async function loadHistory() {
   const peak = d.rows.reduce((a, r) => Math.max(a, r.beforePercent), 0);
   $('h_freed').textContent = fmt(freed, 1) + ' GB';
   $('h_peak').textContent = fmt(peak, 0) + '%';
+  // Semeia o sparkline com o passado: before/after de cada limpeza + marca
+  sparkSeed = []; sparkMarks = [];
+  d.rows.forEach(r => {
+    const t = new Date(r.ts).getTime();
+    if (isNaN(t)) return;
+    sparkSeed.push({ t, pct: r.beforePercent });
+    if (r.afterPercent != null) sparkSeed.push({ t: t + 20000, pct: r.afterPercent });
+    sparkMarks.push({ t, txt: `${r.ts.slice(11, 16)} ${r.action}: ${r.beforePercent}% → ${r.afterPercent}% (−${fmt(r.freedGB, 2)} GB)` });
+  });
+  drawSpark();
 }
 
 loadProfiles(); loadConfig(); loadLogs(); loadHistory();

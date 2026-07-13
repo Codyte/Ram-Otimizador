@@ -4,9 +4,9 @@
 #   L86    Send-Text
 #   L95    Read-JsonBody
 #   L106   Get-UiStatus
-#   L141   Invoke-UiClean
-#   L165   Set-UiTask
-#   L230   Invoke-UiRoute
+#   L142   Invoke-UiClean
+#   L166   Set-UiTask
+#   L231   Invoke-UiRoute
 # ======================= END NAV INDEX =======================
 
 #
@@ -129,6 +129,7 @@ function Get-UiStatus {
         standbyMB = Get-StandbyListMB
         profile   = $cfg.Profile
         threshold = Format-UsageThreshold $cfg.ThresholdClean $cfg.ThresholdCleanGB
+        thresholdPct = Resolve-UsageThresholdPercent $cfg.ThresholdClean $cfg.ThresholdCleanGB $mem.TotalMemoryGB
         monitor   = @{ running = [bool]($hb -and -not $hbStale); stale = $hbStale; hb = $hb }
         taskState = $taskState
         top       = @($top)
@@ -334,6 +335,7 @@ function Invoke-UiRoute {
                         # PT-BR grava virgula decimal; front espera ponto
                         freedGB = [double](("$($_.FreedGB)" -replace ',', '.'))
                         beforePercent = [double](("$($_.BeforePercent)" -replace ',', '.'))
+                        afterPercent  = [double](("$($_.AfterPercent)" -replace ',', '.'))
                     }
                 })
             }

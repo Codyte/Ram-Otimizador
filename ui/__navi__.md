@@ -2,5 +2,5 @@
 <!-- navindex · 2026-07-13 · DO NOT EDIT BY HAND; regen via navindex skill -->
 ↑ repo tree: [`../__navi__.md`](../__navi__.md)
 
-- **index.html** (434 ln)
+- **index.html** (484 ln)
 
