@@ -1,0 +1,28 @@
+# Ram-Otimizador
+
+> RAM cleaner / memory optimizer for Windows 10/11, written in PowerShell. Monitors RAM usage and automatically cleans (trims app working sets, flushes modified pages, optionally purges standby cache) via the native `NtSetSystemInformation` API when usage crosses a configured threshold. No external dependencies, no telemetry. MIT license. UI/menus are in Portuguese (pt-BR); code comments in Portuguese.
+
+Key facts:
+- Install (non-interactive, PowerShell): `irm https://raw.githubusercontent.com/Codyte/Ram-Otimizador/master/install.ps1 | iex`
+- Installs to `%LOCALAPPDATA%\Ram-Otimizador`; updates preserve `config/` and `logs/`
+- Entry point for users: `INICIAR.bat` (opens graphical panel, self-elevates via UAC); `INICIAR.bat cmd` for console menu
+- Cleaning requires admin elevation; the background monitor runs as a SYSTEM scheduled task
+- CLI cleanup (admin): `scripts\LimparRAM-Inteligente.ps1 -Clean <Action>` where Action = Safe | All | SafeStrong | Standby | WorkingSets | SystemWorkingSets | ModifiedPageList
+- `Safe` (default) = WorkingSets → Modified: median 3.3 GB freed over 209 logged cleanups on a 32GB machine; `SafeStrong` = Modified+Standby, frees little but never touches open apps (used automatically when a game is detected)
+- Config: `config/RamCleanerConfig.json` (validated/normalized by `scripts/RamCommon.ps1`); per-cleanup results: `logs/cleanup-history.csv`
+- Game/creator detection lists: `$Global:RamGameApps` / `$Global:RamCreatorApps` in `scripts/RamCommon.ps1`
+
+## Docs
+
+- [README (Portuguese)](README.md): full documentation, measured results, profiles, FAQ
+- [README (English)](README.en.md): full English documentation
+- [CONTRIBUTING](CONTRIBUTING.md): how to contribute
+
+## Code
+
+- [scripts/LimparRAM-Inteligente.ps1](scripts/LimparRAM-Inteligente.ps1): engine — monitor loop, hysteresis band, cleanup steps
+- [scripts/RamCommon.ps1](scripts/RamCommon.ps1): shared library — config schema, profiles, native clean, memory stats
+- [scripts/UI-Server.ps1](scripts/UI-Server.ps1): local HTTP server + JSON API for the panel (token-authenticated)
+- [ui/index.html](ui/index.html): graphical panel (vanilla HTML/CSS/JS, single file)
+- [scripts/Configurar-AutoExecucao.ps1](scripts/Configurar-AutoExecucao.ps1): scheduled task / context menu setup
+- [scripts/test-RamConfig.ps1](scripts/test-RamConfig.ps1): config regression tests (run in CI)

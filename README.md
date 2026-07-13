@@ -1,19 +1,19 @@
-# 🎮 Ram-Otimizador — Limpador de RAM honesto para Windows
+# 🎮 Ram-Otimizador — Limpador e otimizador de RAM para Windows
 
 [![CI](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml/badge.svg)](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml)
 🇺🇸 [English version](README.en.md)
 
-**Monitora sua RAM e limpa sozinho quando passa do limite — com números medidos de verdade, não promessas de FPS.**
+**Monitor automático de memória: quando o uso de RAM passa do limite configurado, limpa sozinho — via API nativa do Windows, com cada limpeza registrada em CSV.**
 
-A maioria dos "limpadores de RAM" promete milagre. Este aqui faz uma coisa só, bem feita: quando o uso de memória passa do limite que você configurou, ele apara o working set dos apps e descarrega páginas sujas usando a API nativa do Windows (`NtSetSystemInformation`) — e **loga cada limpeza num CSV** para você conferir o ganho real.
+Limpador de RAM em PowerShell para Windows 10/11: apara o working set dos apps e descarrega páginas sujas usando `NtSetSystemInformation` (sem programas externos), com detecção de jogo anti-stutter, perfis prontos, painel gráfico e histórico de resultados por limpeza.
 
 ![Painel do Ram-Otimizador](docs/ui-screenshot.png)
 
 ---
 
-## 📊 Números reais (medidos, não inventados)
+## 📊 Testes até agora
 
-Todas as limpezas ficam registradas em `logs/cleanup-history.csv`. Estes são os resultados de **209 limpezas reais** na máquina de desenvolvimento (32GB de RAM):
+Todas as limpezas ficam registradas em `logs/cleanup-history.csv`. Resultados de **209 limpezas** na máquina de desenvolvimento (32GB de RAM):
 
 | Ação | O que faz | Mediana liberada | Máximo | N |
 |------|-----------|------------------|--------|---|
@@ -30,13 +30,12 @@ Seus números vão variar com hardware e carga. Rode e confira no seu próprio C
 
 ---
 
-## 🚫 O que este script NÃO promete
+## 📌 O que esperar ao usar
 
-- **Não promete FPS.** Nunca medimos FPS e não vamos inventar números. O que a limpeza faz é reduzir pressão de memória *quando você está perto do limite* — se sua RAM está folgada, limpar não muda nada no jogo.
-- **Não "acelera o PC"** que já está saudável. Ele ajuda quando a RAM vive em 80%+ e o sistema começa a paginar.
-- **Não mata processos.** Só cache e working sets; seus programas continuam abertos.
-
-Se você tem 32GB e usa 40%, você não precisa disto. Se vive em 85% com jogo + Chrome + Discord, é para você.
+- **Alivia pressão de memória.** Quando a RAM opera perto do limite (80%+), o sistema começa a paginar e engasgar; liberar memória nesse cenário reduz paginação e os travamentos que ela causa. Com RAM folgada, o efeito é pequeno — o monitor simplesmente não dispara.
+- **Nada é fechado.** A limpeza atua em cache e working sets; seus programas continuam abertos e funcionando.
+- **Consequência no disco:** descarregar Modified escreve as páginas sujas no disco (elas iriam para lá de qualquer forma na próxima paginação); o cooldown limita a frequência disso.
+- **Onde mais ajuda:** máquinas com 8-16GB sob carga (jogo + navegador + Discord), servidores que degradam com o tempo, e edição pesada de vídeo/3D.
 
 ---
 
@@ -128,10 +127,10 @@ Todo perfil também configura histerese, standby mínima e nível de log. Editou
 R: Não. Limpa cache e apara working sets; nada é fechado.
 
 **P: Vou ganhar FPS?**
-R: Depende. Se sua RAM vive perto do limite enquanto joga, reduzir a pressão evita paginação e os engasgos que ela causa. Se sua RAM está folgada, não muda nada — e a gente prefere te dizer isso do que inventar um número.
+R: Se sua RAM vive perto do limite enquanto joga, reduzir a pressão evita paginação e os engasgos que ela causa. Com RAM folgada o efeito é pequeno.
 
-**P: Limpar RAM não é placebo?**
-R: Purgar standby toda hora, sim, é quase placebo (por isso NÃO é o padrão aqui). Aparar working sets e descarregar modified libera memória de verdade — está tudo medido no CSV.
+**P: Qual limpeza libera mais?**
+R: `Safe` (padrão): apara working sets e descarrega modified — mediana de 3,3GB nos nossos logs. Purgar só o standby libera quase nada, porque o Windows já solta esse cache sob demanda (por isso não é o padrão).
 
 **P: Precisa de admin?**
 R: Sim — a API de limpeza exige. O painel auto-eleva via UAC; a tarefa agendada roda como SYSTEM sem te incomodar.
@@ -161,6 +160,22 @@ Painel → Configuração → Limite 70-75%, ou aplique o perfil `agressivo-maxi
 
 ---
 
+## 🤖 Para agentes de IA e automação
+
+Instalação sem interação (PowerShell, Windows 10/11):
+
+```powershell
+irm https://raw.githubusercontent.com/Codyte/Ram-Otimizador/master/install.ps1 | iex
+```
+
+- Instala em `%LOCALAPPDATA%\Ram-Otimizador`; atualizações preservam `config/` e `logs/`.
+- Limpeza exige elevação (UAC): `INICIAR.bat` e o painel auto-elevam; a tarefa agendada roda como SYSTEM.
+- Limpeza manual por linha de comando (admin): `scripts\LimparRAM-Inteligente.ps1 -Clean Safe` (ações: `Safe|All|SafeStrong|Standby|WorkingSets|SystemWorkingSets|ModifiedPageList`).
+- Config em `config/RamCleanerConfig.json` (schema e limites em `scripts/RamCommon.ps1`); resultados por limpeza em `logs/cleanup-history.csv`.
+- Resumo legível por máquina: [`llms.txt`](llms.txt).
+
+---
+
 ## 🛠️ Tecnologia
 
 PowerShell (82%) + painel em HTML/CSS/JS vanilla (16%). Sem dependências externas, sem telemetria, sem instalador esquisito — é script, você pode ler tudo.
@@ -186,5 +201,5 @@ MIT — use livremente.
 
 ---
 
-**Feito com ❤️ no Brasil. Sem números inventados: se está no README, está no código ou no CSV.**
+**Feito com ❤️ no Brasil. Os números deste README vêm do código e do `logs/cleanup-history.csv`.**
 **v1.0** — 2026-07-13
