@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Testes de config (test-RamConfig.ps1)
+        shell: pwsh
+        run: ./scripts/test-RamConfig.ps1
+
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $r = Invoke-ScriptAnalyzer -Path ./scripts -Recurse
+          $r | Format-Table RuleName, Severity, ScriptName, Line -AutoSize
+          $errors = @($r | Where-Object Severity -eq 'Error')
+          if ($errors.Count) { Write-Error "$($errors.Count) erro(s) do PSScriptAnalyzer"; exit 1 }

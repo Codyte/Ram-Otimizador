@@ -1,5 +1,7 @@
 # 🎮 Ram-Otimizador — O Limpador de RAM Inteligente para Gamers
 
+[![CI](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml/badge.svg)](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml)
+
 **Limpe sua RAM com inteligência. +20 FPS nos seus jogos. Nunca mais stutter.**
 
 Um otimizador de RAM **inteligente e automático** para Windows que detecta jogos pesados e limpa sua memória estrategicamente — sem engasgo, sem lag spikes, sem destruir seu SSD.
