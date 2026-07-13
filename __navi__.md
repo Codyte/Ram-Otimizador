@@ -1,10 +1,10 @@
-# __navi__ · repo tree — 19 files in 6 folders
+# __navi__ · repo tree — 21 files in 6 folders
 <!-- navindex · 2026-07-13 · DO NOT EDIT BY HAND; regen via navindex skill -->
 
 Universal index: every folder below -> the files it holds (names only). A `→ __navi__.md` marker means that folder has a symbol map — open `<that path>/__navi__.md` for exact line numbers (2 reads total: this tree -> folder map).
 
-## `./` (3 files) → __navi__.md
-CONTRIBUTING.md(196)  README.md(413)  README.txt(68)
+## `./` (5 files) → __navi__.md
+CONTRIBUTING.md(196)  README.en.md(376)  README.md(424)  README.txt(68)  install.ps1(31)
 
 ## `config/` (1 files)
 RamCleanerConfig.json(34)

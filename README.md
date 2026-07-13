@@ -1,10 +1,13 @@
 # 🎮 Ram-Otimizador — O Limpador de RAM Inteligente para Gamers
 
 [![CI](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml/badge.svg)](https://github.com/Codyte/Ram-Otimizador/actions/workflows/ci.yml)
+🇺🇸 [English version](README.en.md)
 
 **Limpe sua RAM com inteligência. +20 FPS nos seus jogos. Nunca mais stutter.**
 
 Um otimizador de RAM **inteligente e automático** para Windows que detecta jogos pesados e limpa sua memória estrategicamente — sem engasgo, sem lag spikes, sem destruir seu SSD.
+
+![Painel do Ram-Otimizador](docs/ui-screenshot.png)
 
 > **Por que importa:** Rust, Warzone, Elden Ring, jogos 3D pesados comem RAM rapidinho. Quando bate nos ~80%, você sente: travos, queda de FPS, lag. Este script limpa ANTES de ficar crítico, mantendo seu sistema sempre responsivo.
 
@@ -88,11 +91,19 @@ MENU PRINCIPAL
 
 ## 🚀 Quick Start (2 minutos)
 
-### 1. Download & Extrair
+### 1. Instalar (1 linha no PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/Codyte/Ram-Otimizador/master/install.ps1 | iex
+```
+Baixa a última versão, instala em `%LOCALAPPDATA%\Ram-Otimizador` (atualizações preservam sua config) e abre o painel.
+
+<details><summary>Prefere git clone?</summary>
+
 ```powershell
 git clone https://github.com/Codyte/Ram-Otimizador.git
 cd Ram-Otimizador
 ```
+</details>
 
 ### 2. Executar
 ```
